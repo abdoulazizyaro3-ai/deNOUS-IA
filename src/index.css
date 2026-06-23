@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-brand-ochre: #C1561F;
+  --color-brand-savannah: #3D6B35;
+  --color-brand-gold: #E8A33D;
+  --color-brand-sand: #FAF6F0;
+  --color-brand-espresso: #2B1810;
+  --color-brand-clay-light: #F5ECE1;
+  --color-brand-red-clay: #A8341A;
+
+  /* Legacy aliases mapped to warm palette to minimize breaking other styles */
+  --color-brand-green: #3D6B35;
+  --color-brand-green-hover: #2F5428;
+  --color-brand-light-green: #F5ECE1;
+  --color-brand-offwhite: #FAF6F0;
+  --color-brand-beige: #EADBC8;
+  --color-brand-dark: #2B1810;
+
+  --font-sans: "Nunito", "Poppins", system-ui, sans-serif;
+  --font-display: "Poppins", "Nunito", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+/* Bogolan Geometric Mali Texture Background */
+.bg-bogolan {
+  background-color: #FAF6F0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cpath d='M40 0 L80 40 L40 80 L0 40 Z' fill='none' stroke='%23C1561F' stroke-width='1.5' stroke-opacity='0.1'/%3E%3Cpath d='M0 0 L40 40 L0 80 Z' fill='none' stroke='%233D6B35' stroke-width='1' stroke-opacity='0.08'/%3E%3Cpath d='M80 0 L40 40 L80 80 Z' fill='none' stroke='%233D6B35' stroke-width='1' stroke-opacity='0.08'/%3E%3Ccircle cx='40' cy='40' r='5' fill='%23E8A33D' fill-opacity='0.16' /%3E%3Cpath d='M20 20 L60 20 L60 60 L20 60 Z' fill='none' stroke='%232B1810' stroke-width='1' stroke-opacity='0.08'/%3E%3Cpath d='M0 40 H80 M40 0 V80' stroke='%23C1561F' stroke-width='0.5' stroke-opacity='0.06'/%3E%3C/svg%3E");
+}
+
+/* Kita/Kente geometric strip border style */
+.border-kenteSplice {
+  border-image: repeating-linear-gradient(45deg, #C1561F, #C1561F 10px, #E8A33D 10px, #E8A33D 20px, #3D6B35 20px, #3D6B35 30px) 10;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(232, 163, 61, 0.7);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 25px rgba(232, 163, 61, 0);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+@keyframes wave-flow {
+  0% {
+    transform: scaleY(0.4);
+  }
+  50% {
+    transform: scaleY(1.2);
+  }
+  100% {
+    transform: scaleY(0.4);
+  }
+}
+
+.animate-wave-flow {
+  animation: wave-flow 1.2s infinite ease-in-out;
+}
+
+/* Beautiful custom soft scrollbar for layout */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(193, 86, 31, 0.2);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(193, 86, 31, 0.4);
+}
+

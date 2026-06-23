@@ -1,0 +1,6 @@
+{
+  "name": "Mémoire Africaine IA",
+  "description": "Plateforme intelligente et souveraine de collecte, structuration en graphe de connaissances et valorisation des savoirs et patrimoines africains.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
