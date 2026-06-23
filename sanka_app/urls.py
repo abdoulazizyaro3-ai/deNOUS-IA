@@ -128,6 +128,15 @@ urlpatterns = [
     path('api/activities/', views.list_activities, name='list_activities'),
     
     # ============================================================
+    # EXPLORE AFRICA
+    # ============================================================
+    path('api/explore/countries/', views.get_explore_countries, name='get_explore_countries'),
+    path('api/explore/countries/create/', views.create_explore_country, name='create_explore_country'),
+    path('api/explore/countries/<str:country_id>/', views.get_explore_country_details, name='get_explore_country_details'),
+    path('api/explore/countries/<str:country_id>/update/', views.update_explore_country, name='update_explore_country'),
+    path('api/explore/countries/<str:country_id>/delete/', views.delete_explore_country, name='delete_explore_country'),
+
+    # ============================================================
     # SOURCE CODE
     # ============================================================
     path('api/python/source/', views.python_source, name='python_source'),

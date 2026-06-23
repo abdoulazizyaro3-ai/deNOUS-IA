@@ -972,3 +972,190 @@ class LocalAudio(models.Model):
         
     def __str__(self):
         return f"{self.title} ({self.get_language_display()})"
+
+
+# ============================================
+# 13. TABLE EXPLORE AFRICA
+# ============================================
+class ExploreCountry(models.Model):
+    """
+    Informations sur les pays pour la page Explorer l'Afrique
+    """
+    id_name = models.CharField(max_length=50, primary_key=True, help_text="ex: burkina_faso")
+    name = models.CharField(max_length=100)
+    local_greeting = models.CharField(max_length=100)
+    local_greeting_explanation = models.TextField()
+    capital = models.CharField(max_length=100)
+    currency = models.CharField(max_length=100)
+    population = models.CharField(max_length=100)
+    tagline = models.CharField(max_length=255)
+    flag_emoji = models.CharField(max_length=10)
+    overview = models.TextField()
+    
+    # Détails étendus (pour CountryDescription)
+    history = models.TextField(blank=True, null=True)
+    culture = models.TextField(blank=True, null=True)
+    gastronomy = models.TextField(blank=True, null=True)
+    
+    # Données JSON pour les structures complexes
+    # Données complexes devenues des tables liées (ExploreDemography, ExploreEconomy, ExploreLanguage)
+    key_facts = models.JSONField(default=list, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Pays (Explorer l'Afrique)"
+        verbose_name_plural = "Pays (Explorer l'Afrique)"
+
+    def __str__(self):
+        return self.name
+
+    def to_dict(self):
+        # We fetch related demographics, economy, and languages
+        demographics = {}
+        if hasattr(self, 'demography'):
+            demographics = self.demography.to_dict()
+
+        economy = {}
+        if hasattr(self, 'economy_info'):
+            economy = self.economy_info.to_dict()
+
+        langs = [lang.to_dict() for lang in self.explore_languages.all()]
+
+        return {
+            "id": self.id_name,
+            "name": self.name,
+            "localGreeting": self.local_greeting,
+            "localGreetingExplanation": self.local_greeting_explanation,
+            "capital": self.capital,
+            "currency": self.currency,
+            "population": self.population,
+            "tagline": self.tagline,
+            "flagEmoji": self.flag_emoji,
+            "overview": self.overview,
+            "history": self.history,
+            "culture": self.culture,
+            "gastronomy": self.gastronomy,
+            "keyFacts": self.key_facts,
+            "demographics": demographics,
+            "economy": economy,
+            "languages": langs,
+            "landmarks": [lm.to_dict() for lm in self.landmarks.all()]
+        }
+
+class ExploreDemography(models.Model):
+    country = models.OneToOneField(ExploreCountry, on_delete=models.CASCADE, related_name="demography")
+    total = models.CharField(max_length=100, blank=True, null=True, verbose_name="Population totale")
+    density = models.CharField(max_length=100, blank=True, null=True, verbose_name="Densité")
+    median_age = models.CharField(max_length=100, blank=True, null=True, verbose_name="Âge médian")
+    urban_ratio = models.CharField(max_length=100, blank=True, null=True, verbose_name="Taux d'urbanisation")
+    life_expectancy = models.CharField(max_length=100, blank=True, null=True, verbose_name="Espérance de vie")
+    ethnic_groups = models.TextField(blank=True, null=True, help_text="Séparez les groupes par des virgules", verbose_name="Groupes ethniques")
+
+    class Meta:
+        verbose_name = "Démographie"
+        verbose_name_plural = "Démographies"
+
+    def __str__(self):
+        return f"Démographie - {self.country.name}"
+
+    def to_dict(self):
+        return {
+            "total": self.total or "",
+            "density": self.density or "",
+            "medianAge": self.median_age or "",
+            "urbanRatio": self.urban_ratio or "",
+            "lifeExpectancy": self.life_expectancy or "",
+            "ethnicGroups": [e.strip() for e in self.ethnic_groups.split(',')] if self.ethnic_groups else []
+        }
+
+class ExploreEconomy(models.Model):
+    country = models.OneToOneField(ExploreCountry, on_delete=models.CASCADE, related_name="economy_info")
+    gdp = models.CharField(max_length=100, blank=True, null=True, verbose_name="PIB")
+    gdp_growth = models.CharField(max_length=100, blank=True, null=True, verbose_name="Croissance du PIB")
+    currency = models.CharField(max_length=100, blank=True, null=True, verbose_name="Devise")
+    main_sectors = models.TextField(blank=True, null=True, help_text="Séparez les secteurs par des virgules", verbose_name="Secteurs principaux")
+    key_exports = models.TextField(blank=True, null=True, verbose_name="Exportations majeures")
+
+    class Meta:
+        verbose_name = "Économie"
+        verbose_name_plural = "Économies"
+
+    def __str__(self):
+        return f"Économie - {self.country.name}"
+
+    def to_dict(self):
+        return {
+            "gdp": self.gdp or "",
+            "gdpGrowth": self.gdp_growth or "",
+            "currency": self.currency or "",
+            "mainSectors": [s.strip() for s in self.main_sectors.split(',')] if self.main_sectors else [],
+            "keyExports": self.key_exports or ""
+        }
+
+class ExploreLanguage(models.Model):
+    country = models.ForeignKey(ExploreCountry, on_delete=models.CASCADE, related_name="explore_languages")
+    name = models.CharField(max_length=100, verbose_name="Nom de la langue")
+    percentage = models.CharField(max_length=50, blank=True, null=True, verbose_name="Pourcentage")
+    language_type = models.CharField(max_length=100, blank=True, null=True, verbose_name="Type (ex: Officielle, Nationale)")
+
+    class Meta:
+        verbose_name = "Langue parlée"
+        verbose_name_plural = "Langues parlées"
+
+    def __str__(self):
+        return f"{self.name} ({self.country.name})"
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "percentage": self.percentage or "",
+            "type": self.language_type or ""
+        }
+
+class ExploreLandmark(models.Model):
+    """
+    Sites touristiques et points de repères par pays
+    """
+    landmark_id = models.CharField(max_length=100, primary_key=True, help_text="ex: bk_sindou")
+    country = models.ForeignKey(ExploreCountry, on_delete=models.CASCADE, related_name="landmarks")
+    name = models.CharField(max_length=200)
+    category = models.CharField(max_length=50) # 'touristic', 'landscape', etc.
+    category_label = models.CharField(max_length=100)
+    image = models.URLField(max_length=500)
+    description = models.TextField()
+    location = models.CharField(max_length=255)
+    price = models.CharField(max_length=100, blank=True, null=True)
+    rating = models.FloatField(blank=True, null=True)
+    tag = models.CharField(max_length=100, blank=True, null=True)
+    date_range = models.CharField(max_length=100, blank=True, null=True)
+    lat = models.FloatField(blank=True, null=True)
+    lng = models.FloatField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Site touristique (Explorer l'Afrique)"
+        verbose_name_plural = "Sites touristiques (Explorer l'Afrique)"
+
+    def __str__(self):
+        return f"{self.name} ({self.country.name})"
+
+    def to_dict(self):
+        return {
+            "id": self.landmark_id,
+            "name": self.name,
+            "category": self.category,
+            "categoryLabel": self.category_label,
+            "image": self.image,
+            "description": self.description,
+            "location": self.location,
+            "price": self.price,
+            "rating": self.rating,
+            "tag": self.tag,
+            "dateRange": self.date_range,
+            "lat": self.lat,
+            "lng": self.lng
+        }

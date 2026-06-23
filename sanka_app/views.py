@@ -1433,6 +1433,214 @@ def delete_audio(request, audio_id):
 
 
 # =====================================================================
+# EXPLORE AFRICA API
+# =====================================================================
+
+@csrf_exempt
+def get_explore_countries(request):
+    """
+    Récupère la liste de tous les pays pour la page Explorer l'Afrique,
+    avec leurs informations générales et leurs landmarks.
+    """
+    from sanka_app.models import ExploreCountry
+    countries = ExploreCountry.objects.all().prefetch_related('landmarks')
+    
+    countries_data = {}
+    for country in countries:
+        countries_data[country.id_name] = country.to_dict()
+        
+    return JsonResponse(countries_data)
+
+@csrf_exempt
+def get_explore_country_details(request, country_id):
+    """
+    Récupère les détails avancés d'un pays spécifique
+    """
+    from sanka_app.models import ExploreCountry
+    try:
+        country = ExploreCountry.objects.get(id_name=country_id)
+        # to_dict returns everything we need!
+        data = country.to_dict()
+        details = {
+            "history": data.get("history", ""),
+            "culture": data.get("culture", ""),
+            "gastronomy": data.get("gastronomy", ""),
+            "keyFacts": data.get("keyFacts", []),
+            "demographics": data.get("demographics", {}),
+            "economy": data.get("economy", {}),
+            "languages": data.get("languages", []),
+        }
+        return JsonResponse(details)
+    except ExploreCountry.DoesNotExist:
+        return JsonResponse({"error": "Pays non trouvé"}, status=404)
+
+@csrf_exempt
+def create_explore_country(request):
+    import json
+    from sanka_app.models import ExploreCountry, ExploreDemography, ExploreEconomy, ExploreLanguage, ExploreLandmark
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            country = ExploreCountry.objects.create(
+                id_name=data.get("id", f"c_{data.get('name', '').lower().replace(' ', '_')}"),
+                name=data.get("name", ""),
+                local_greeting=data.get("localGreeting", ""),
+                local_greeting_explanation=data.get("localGreetingExplanation", ""),
+                capital=data.get("capital", ""),
+                currency=data.get("currency", ""),
+                population=data.get("population", ""),
+                tagline=data.get("tagline", ""),
+                flag_emoji=data.get("flagEmoji", ""),
+                overview=data.get("overview", ""),
+                history=data.get("history", ""),
+                culture=data.get("culture", ""),
+                gastronomy=data.get("gastronomy", ""),
+                key_facts=data.get("keyFacts", [])
+            )
+
+            # Demography
+            if data.get("demographics"):
+                d = data["demographics"]
+                ExploreDemography.objects.create(
+                    country=country,
+                    total=d.get("total", ""),
+                    density=d.get("density", ""),
+                    median_age=d.get("medianAge", ""),
+                    urban_ratio=d.get("urbanRatio", ""),
+                    life_expectancy=d.get("lifeExpectancy", ""),
+                    ethnic_groups=", ".join(d.get("ethnicGroups", []))
+                )
+
+            # Economy
+            if data.get("economy"):
+                e = data["economy"]
+                ExploreEconomy.objects.create(
+                    country=country,
+                    gdp=e.get("gdp", ""),
+                    gdp_growth=e.get("gdpGrowth", ""),
+                    currency=e.get("currency", ""),
+                    main_sectors=", ".join(e.get("mainSectors", [])),
+                    key_exports=e.get("keyExports", "")
+                )
+
+            # Languages
+            if data.get("languages"):
+                for lang in data["languages"]:
+                    ExploreLanguage.objects.create(
+                        country=country,
+                        name=lang.get("name", ""),
+                        percentage=lang.get("percentage", ""),
+                        language_type=lang.get("type", "")
+                    )
+
+            # Landmarks
+            if data.get("landmarks"):
+                for lm in data["landmarks"]:
+                    ExploreLandmark.objects.create(
+                        country=country,
+                        name=lm.get("name", ""),
+                        description=lm.get("description", ""),
+                        image_url=lm.get("image", "")
+                    )
+
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Method non autorisée"}, status=405)
+
+@csrf_exempt
+def update_explore_country(request, country_id):
+    import json
+    from sanka_app.models import ExploreCountry, ExploreDemography, ExploreEconomy, ExploreLanguage, ExploreLandmark
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            country = ExploreCountry.objects.get(id_name=country_id)
+            country.name = data.get("name", country.name)
+            country.local_greeting = data.get("localGreeting", country.local_greeting)
+            country.local_greeting_explanation = data.get("localGreetingExplanation", country.local_greeting_explanation)
+            country.capital = data.get("capital", country.capital)
+            country.currency = data.get("currency", country.currency)
+            country.population = data.get("population", country.population)
+            country.tagline = data.get("tagline", country.tagline)
+            country.flag_emoji = data.get("flagEmoji", country.flag_emoji)
+            country.overview = data.get("overview", country.overview)
+            country.history = data.get("history", country.history)
+            country.culture = data.get("culture", country.culture)
+            country.gastronomy = data.get("gastronomy", country.gastronomy)
+            country.key_facts = data.get("keyFacts", country.key_facts)
+            country.save()
+
+            if "demographics" in data:
+                d = data["demographics"]
+                ExploreDemography.objects.update_or_create(
+                    country=country,
+                    defaults={
+                        "total": d.get("total", ""),
+                        "density": d.get("density", ""),
+                        "median_age": d.get("medianAge", ""),
+                        "urban_ratio": d.get("urbanRatio", ""),
+                        "life_expectancy": d.get("lifeExpectancy", ""),
+                        "ethnic_groups": ", ".join(d.get("ethnicGroups", [])) if isinstance(d.get("ethnicGroups"), list) else d.get("ethnicGroups", "")
+                    }
+                )
+
+            if "economy" in data:
+                e = data["economy"]
+                ExploreEconomy.objects.update_or_create(
+                    country=country,
+                    defaults={
+                        "gdp": e.get("gdp", ""),
+                        "gdp_growth": e.get("gdpGrowth", ""),
+                        "currency": e.get("currency", ""),
+                        "main_sectors": ", ".join(e.get("mainSectors", [])) if isinstance(e.get("mainSectors"), list) else e.get("mainSectors", ""),
+                        "key_exports": e.get("keyExports", "")
+                    }
+                )
+
+            if "languages" in data:
+                country.explore_languages.all().delete()
+                for lang in data["languages"]:
+                    ExploreLanguage.objects.create(
+                        country=country,
+                        name=lang.get("name", ""),
+                        percentage=lang.get("percentage", ""),
+                        language_type=lang.get("type", "")
+                    )
+
+            if "landmarks" in data:
+                country.landmarks.all().delete()
+                for lm in data["landmarks"]:
+                    ExploreLandmark.objects.create(
+                        country=country,
+                        name=lm.get("name", ""),
+                        description=lm.get("description", ""),
+                        image_url=lm.get("image", "")
+                    )
+
+            return JsonResponse({"success": True})
+        except ExploreCountry.DoesNotExist:
+            return JsonResponse({"error": "Pays non trouvé"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Method non autorisée"}, status=405)
+
+@csrf_exempt
+def delete_explore_country(request, country_id):
+    from sanka_app.models import ExploreCountry
+    if request.method == "POST" or request.method == "DELETE":
+        try:
+            country = ExploreCountry.objects.get(id_name=country_id)
+            country.delete()
+            return JsonResponse({"success": True})
+        except ExploreCountry.DoesNotExist:
+            return JsonResponse({"error": "Pays non trouvé"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Method non autorisée"}, status=405)
+
+
+# =====================================================================
 # STATIC FILE / DEV PROXY SERVICES
 # =====================================================================
 

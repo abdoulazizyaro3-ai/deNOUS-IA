@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { countriesData, CountryData, Landmark } from "../../data/explore-africa/data";
 import { 
   Compass, 
   Info, 
@@ -34,6 +33,7 @@ import {
 interface AfricaMapProps {
   onSelectCountry: (id: string | null) => void;
   selectedCountryId: string | null;
+  countriesData: Record<string, any>;
 }
 
 const countryCoordinates: Record<string, { lat: number; lng: number; zoom: number }> = {
@@ -101,7 +101,7 @@ function getCountryFromLatLng(lat: number, lng: number): string | null {
 type MapStyle = "voyager" | "satellite" | "dark";
 type TabFilter = "touristic" | "commercial" | "cultural" | "demographics";
 
-export default function AfricaMap({ onSelectCountry, selectedCountryId }: AfricaMapProps) {
+export default function AfricaMap({ onSelectCountry, selectedCountryId, countriesData }: AfricaMapProps) {
   const [hoveredCountryId, setHoveredCountryId] = useState<string | null>(null);
   const [mapStyle, setMapStyle] = useState<MapStyle>("voyager");
   const [isLeafletLoaded, setIsLeafletLoaded] = useState(false);
@@ -159,7 +159,7 @@ export default function AfricaMap({ onSelectCountry, selectedCountryId }: Africa
   const currentCountry = selectedCountryId ? countriesData[selectedCountryId] : countriesData["burkina_faso"];
 
   // Filter landmarks by search criteria & active categories
-  const filteredLandmarks = currentCountry.landmarks.filter(land => {
+  const filteredLandmarks = currentCountry?.landmarks?.filter((land: any) => {
     // Correct list tab categorization mapping
     if (activeTab === "touristic" && land.category !== "touristic") return false;
     if (activeTab === "commercial" && land.category !== "commercial") return false;
@@ -393,7 +393,7 @@ export default function AfricaMap({ onSelectCountry, selectedCountryId }: Africa
   }, [isLeafletLoaded, mapStyle, selectedCountryId, currentCountry, focusedLandmarkId, activeTab]);
 
   // Handle zooming / flying on list item click
-  const handleSelectLandmark = (land: Landmark) => {
+  const handleSelectLandmark = (land: any) => {
     setFocusedLandmarkId(land.id);
     if (leafletInstance.current && land.lat && land.lng) {
       leafletInstance.current.flyTo([land.lat, land.lng], 9.5, {

@@ -11,6 +11,21 @@ interface ExplorerAfriqueProps {
 
 export default function ExplorerAfrique({ searchQuery, setSearchQuery, handleSuggestionClick }: ExplorerAfriqueProps) {
   const [selectedCountryId, setSelectedCountryId] = useState<string | null>(null);
+  const [countriesData, setCountriesData] = useState<Record<string, any> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/explore/countries/')
+      .then(res => res.json())
+      .then(data => {
+        setCountriesData(data);
+        setIsLoading(false);
+      })
+      .catch(err => {
+        console.error("Erreur de chargement:", err);
+        setIsLoading(false);
+      });
+  }, []);
 
   // Track selection and update map highlight
   const handleSelectCountry = (id: string | null) => {
@@ -68,10 +83,17 @@ export default function ExplorerAfrique({ searchQuery, setSearchQuery, handleSug
             </p>
           </div>
 
-          <AfricaMap 
-            onSelectCountry={handleSelectCountry} 
-            selectedCountryId={selectedCountryId}
-          />
+          {isLoading ? (
+            <div className="h-[600px] flex items-center justify-center bg-stone-50 rounded-3xl border border-stone-200">
+               <div className="animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full"></div>
+            </div>
+          ) : (
+            <AfricaMap 
+              onSelectCountry={handleSelectCountry} 
+              selectedCountryId={selectedCountryId}
+              countriesData={countriesData || {}}
+            />
+          )}
         </section>
       </main>
 
@@ -102,7 +124,7 @@ export default function ExplorerAfrique({ searchQuery, setSearchQuery, handleSug
 
               {/* Scrolling wrapper for CountryDescription content */}
               <div className="flex-1 overflow-y-auto p-1 scrollbar-thin">
-                <CountryDescription countryId={selectedCountryId} />
+                <CountryDescription countryId={selectedCountryId} countriesData={countriesData || {}} />
               </div>
             </div>
           </div>

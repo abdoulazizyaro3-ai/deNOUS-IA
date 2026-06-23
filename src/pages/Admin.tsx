@@ -4,6 +4,7 @@ import {
   X, Check, AlertCircle, Upload, Shield, Database, Compass, Info
 } from "lucide-react";
 import { KnowledgeNode, ArchiveItem } from "../types";
+import AdminExploreAfrica from "./AdminExploreAfrica";
 
 interface DictionaryItem {
   id: string;
@@ -33,7 +34,7 @@ interface AudioItem {
 }
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState<"nodes" | "dictionaries" | "archives" | "audios">("nodes");
+  const [activeTab, setActiveTab] = useState<"nodes" | "dictionaries" | "archives" | "audios" | "countries">("nodes");
   const [nodes, setNodes] = useState<KnowledgeNode[]>([]);
   const [dictionaries, setDictionaries] = useState<DictionaryItem[]>([]);
   const [archives, setArchives] = useState<ArchiveItem[]>([]);
@@ -729,6 +730,16 @@ export default function Admin() {
           >
             🎙️ Audios Locaux ({audios.length})
           </button>
+          <button
+            onClick={() => { setActiveTab("countries"); setSearchTerm(""); }}
+            className={`px-4 py-2.5 rounded-xl text-xs font-black tracking-normal transition-all duration-150 ${
+              activeTab === "countries"
+                ? "bg-[#F5ECE1] text-[#C1561F] shadow-sm"
+                : "text-[#2B1810]/70 hover:bg-[#F5ECE1]/40"
+            }`}
+          >
+            🌍 Explorer l'Afrique
+          </button>
         </div>
 
         <div className="relative flex-1 max-w-md">
@@ -744,6 +755,8 @@ export default function Admin() {
                 ? "Rechercher un dictionnaire (titre, langue)..."
                 : activeTab === "archives"
                 ? "Rechercher une archive (description, type, provenance)..."
+                : activeTab === "countries"
+                ? "Rechercher un pays..."
                 : "Rechercher un audio (titre, langue, dialecte)..."
             }
             value={searchTerm}
@@ -1153,6 +1166,11 @@ export default function Admin() {
             )}
           </div>
         </div>
+      )}
+
+      {/* --- TAB 5: EXPLORE AFRICA --- */}
+      {activeTab === "countries" && (
+        <AdminExploreAfrica searchTerm={searchTerm} />
       )}
 
       {/* --- NODE MODAL (CREATE / EDIT) --- */}

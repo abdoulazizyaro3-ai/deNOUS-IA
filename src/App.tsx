@@ -10,7 +10,6 @@ import { AgentSquadCard } from "./components/AgentSquadCard";
 import AssistantVocal from "./pages/AssistantVocal";
 import Messages from "./pages/Messages";
 import ExplorerAfrique from "./pages/ExplorerAfrique";
-import EducationRecherche from "./pages/EducationRecherche";
 import Parametres from "./pages/Parametres";
 import MonCompte from "./pages/MonCompte";
 import Admin from "./pages/Admin";
@@ -171,7 +170,6 @@ export default function App() {
     { label: "Assistant vocal", icon: Mic, desc: "Aller vers l'assistant vocal interactif" },
     { label: "Messages", icon: MessageSquare, desc: "Vos messages écrits avec l'assistant virtuel" },
     { label: "Explorer l'Afrique", icon: Globe, desc: "Parcourir la sagesse des différents pays d'Afrique" },
-    { label: "Éducation & Recherche", icon: GraduationCap, desc: "Médecine traditionnelle, agriculture rurale et sciences" },
     { label: "Administration", icon: Shield, desc: "Gérer la base de données et les dictionnaires" },
   ];
 
@@ -313,7 +311,6 @@ export default function App() {
         )}
         {activeTab === "Messages" && <Messages messages={messages} keyboardText={keyboardText} setKeyboardText={setKeyboardText} handleQuerySubmit={handleChatQuerySubmit} setMessages={setMessages} speakText={speakText} fileInputRef={fileInputRef} attachedFile={attachedFile} setAttachedFile={setAttachedFile} />}
         {activeTab === "Explorer l'Afrique" && <ExplorerAfrique searchQuery={searchQuery} setSearchQuery={setSearchQuery} handleSuggestionClick={handleSuggestionClick} />}
-        {activeTab === "Éducation & Recherche" && <EducationRecherche />}
         {activeTab === "Paramètres" && <Parametres />}
         {activeTab === "Mon compte" && <MonCompte />}
         {activeTab === "Administration" && <Admin />}

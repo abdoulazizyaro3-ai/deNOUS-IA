@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { countriesData, Landmark } from "../../data/explore-africa/data";
-import { countriesDetails, CountryDetails } from "../../data/explore-africa/countryDetails";
-import { getLandmarkDetails } from "../../data/explore-africa/landmarkDetails";
 import { 
   BookOpen, 
   Quote, 
@@ -27,7 +24,52 @@ import {
 
 interface CountryDescriptionProps {
   countryId: string | null;
+  countriesData: Record<string, any>;
   key?: string;
+}
+
+// Inline helper for landmark modal details
+function getLandmarkDetails(id: string, fallbackName: string, fallbackDesc: string) {
+  const categoryImages: Record<string, string[]> = {
+    nature: [
+      "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1504198453319-5ce911bafcde?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?q=80&w=1200&auto=format&fit=crop"
+    ],
+    town: [
+      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1555529669-e69e7aa0ba9a?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1560750588-73207b1ef5b8?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1200&auto=format&fit=crop"
+    ],
+    festive: [
+      "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=1200&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1200&auto=format&fit=crop"
+    ]
+  };
+
+  const safeId = String(id || "").toLowerCase();
+  const isFestive = safeId.includes("fest") || safeId.includes("siao") || safeId.includes("fespaco") || safeId.includes("snc") || safeId.includes("amani") || safeId.includes("femua") || safeId.includes("jazz") || safeId.includes("art");
+  const isTown = safeId.includes("mall") || safeId.includes("plaza") || safeId.includes("market") || safeId.includes("march") || safeId.includes("artisan") || safeId.includes("rood");
+  
+  const chosenImages = isFestive ? categoryImages.festive : isTown ? categoryImages.town : categoryImages.nature;
+
+  return {
+    images: chosenImages,
+    detailedDescription: `${fallbackDesc} Ce lieu exceptionnel incarne la grande richesse de la région. Visiter ${fallbackName} permet d'entrer en connexion directe avec la ferveur vibrante de ses habitants, d'admirer des techniques ou des reliefs préservés uniques et d'immortaliser des moments mémorables au cours de votre voyage d'exploration d'Afrique.`,
+    whyVisit: "Pour l'immersion intense et authentique au contact d'un patrimoine africain d'envergure mondiale.",
+    practicalTips: [
+      "Demandez des conseils avisés auprès d'un comptoir d'office de tourisme ou d'un guide officiel.",
+      "Prévoyez les rands, rands CFA ou livres locales nécessaires pour régler les taxes d'entrée.",
+      "Prenez soin de respecter l'écosystème local et les traditions sacrées en vigueur dans cette communauté."
+    ]
+  };
 }
 
 // Custom cultural quotes matching each country to enrich the experience
@@ -57,7 +99,7 @@ const countryQuotes: Record<string, { text: string; author: string }> = {
     author: "Philosophie de Nelson Mandela"
   },
   cote_divoire: {
-    text: "Le découragement n'est pas ivoirien. Notre joie de vivre est l'énergie qui transforme chaque défi en fête.",
+    text: "Le découragement n'est pas ivoirien. Notre joie de vivre est l'énergie qui transformera chaque défi en fête.",
     author: "Adage du Nouchi d'Abidjan"
   },
   kenya: {
@@ -66,25 +108,47 @@ const countryQuotes: Record<string, { text: string; author: string }> = {
   }
 };
 
-export default function CountryDescription({ countryId }: CountryDescriptionProps) {
+export default function CountryDescription({ countryId, countriesData }: CountryDescriptionProps) {
   const [activeTab, setActiveTab] = useState<"description" | "touristic" | "demographics" | "economy" | "languages">("description");
-  const [selectedLandmark, setSelectedLandmark] = useState<Landmark | null>(null);
+  const [selectedLandmark, setSelectedLandmark] = useState<any | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
+  const [details, setDetails] = useState<any | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
-  // Reset selected landmark when country changes
+  // Reset selected landmark and fetch details when country changes
   useEffect(() => {
     setSelectedLandmark(null);
+    if (countryId) {
+      setIsLoadingDetails(true);
+      fetch(`/api/explore/countries/${countryId}/`)
+        .then(res => res.json())
+        .then(data => {
+          setDetails(data);
+          setIsLoadingDetails(false);
+        })
+        .catch(err => {
+          console.error(err);
+          setIsLoadingDetails(false);
+        });
+    }
   }, [countryId]);
 
   if (!countryId) return null;
 
   const currentCountry = countriesData[countryId];
-  const details: CountryDetails | undefined = countriesDetails[countryId];
   const quote = countryQuotes[countryId];
 
-  if (!currentCountry || !details) {
+  if (!currentCountry || isLoadingDetails) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl text-xs font-semibold">
+      <div className="flex items-center justify-center p-10 h-full">
+         <div className="animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
+  if (!details || details.error) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl text-xs font-semibold m-4">
         Détails descriptifs indisponibles pour ce pays ({countryId}).
       </div>
     );
