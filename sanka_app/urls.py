@@ -17,11 +17,16 @@ urlpatterns = [
     path('api/me/', views.current_user, name='current_user'),
     
     # ============================================================
-    # PROFIL
+    # PROFIL ET UTILISATEURS
     # ============================================================
     path('api/profile/<int:user_id>/', views.get_profile, name='get_profile'),
     path('api/profile/update/', views.update_profile, name='update_profile'),
     path('api/top-contributors/', views.get_top_contributors, name='top_contributors'),
+    
+    path('api/users', views.list_users, name='list_users_no_slash'),
+    path('api/users/', views.list_users, name='list_users'),
+    path('api/users/<int:target_id>/role', views.update_user_role, name='update_user_role_no_slash'),
+    path('api/users/<int:target_id>/role/', views.update_user_role, name='update_user_role'),
     
     # ============================================================
     # KNOWLEDGE NODES

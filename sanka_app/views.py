@@ -181,6 +181,7 @@ def login_view(request):
     })
 
 
+@csrf_exempt
 def logout_view(request):
     """Logout user"""
     logout(request)
@@ -256,13 +257,99 @@ def update_profile(request):
         profile.bio = data["bio"]
     if "role" in data:
         profile.role = data["role"]
-    
+        
     profile.save()
     
     return JsonResponse({
         "success": True,
         "profile": profile.to_dict()
     })
+
+def list_users(request):
+    """List all users (Admin only)"""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+    
+    try:
+        profile = Profile.objects.get(user=request.user)
+    except Profile.DoesNotExist:
+        return JsonResponse({"error": "Profile not found"}, status=404)
+        
+    if profile.role not in ["admin", "moderator"] and not request.user.is_superuser:
+        return JsonResponse({"error": "Forbidden: Admin access required"}, status=403)
+        
+    users = User.objects.all().select_related("profile")
+    user_list = []
+    for u in users:
+        try:
+            p = u.profile
+            p_dict = p.to_dict()
+        except Profile.DoesNotExist:
+            p_dict = {}
+            
+        user_list.append({
+            "id": u.id,
+            "username": u.username,
+            "email": u.email,
+            "is_superuser": u.is_superuser,
+            "profile": p_dict
+        })
+        
+    return JsonResponse({"users": user_list})
+
+
+@csrf_exempt
+def update_user_role(request, target_id):
+    """Update another user's role (Admin only)"""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "Not authenticated"}, status=401)
+        
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+        
+    try:
+        current_profile = Profile.objects.get(user=request.user)
+    except Profile.DoesNotExist:
+        return JsonResponse({"error": "Profile not found"}, status=404)
+        
+    if current_profile.role not in ["admin", "moderator"] and not request.user.is_superuser:
+        return JsonResponse({"error": "Forbidden: Admin access required"}, status=403)
+        
+    try:
+        data = json.loads(request.body)
+        new_role = data.get("role")
+    except Exception:
+        return JsonResponse({"error": "Invalid JSON body"}, status=400)
+        
+    if not new_role or new_role not in ["visitor", "user", "admin", "moderator"]:
+        return JsonResponse({"error": "Invalid role specified"}, status=400)
+        
+    try:
+        target_user = User.objects.get(id=target_id)
+        target_profile = Profile.objects.get(user=target_user)
+        
+        target_profile.role = new_role
+        target_profile.save()
+        
+        # Sync with Django superuser status if admin
+        if new_role == "admin":
+            target_user.is_superuser = True
+            target_user.is_staff = True
+        else:
+            target_user.is_superuser = False
+            target_user.is_staff = False
+        target_user.save()
+            
+        return JsonResponse({
+            "success": True, 
+            "user": {
+                "id": target_user.id,
+                "username": target_user.username,
+                "profile": target_profile.to_dict()
+            }
+        })
+    except (User.DoesNotExist, Profile.DoesNotExist):
+        return JsonResponse({"error": "Target user not found"}, status=404)
 
 
 def get_top_contributors(request):

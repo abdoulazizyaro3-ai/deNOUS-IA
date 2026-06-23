@@ -151,7 +151,14 @@ export default function Messages({
                     </svg>
                   </div>
                 )}
-                <p className="whitespace-pre-line relative z-10">{m.text}</p>
+                <div className="whitespace-pre-line relative z-10">
+                  {m.text.split(/(\*\*.*?\*\*)/g).map((part, i) => {
+                    if (part.startsWith('**') && part.endsWith('**')) {
+                      return <strong key={i} className="font-bold">{part.slice(2, -2)}</strong>;
+                    }
+                    return <span key={i}>{part}</span>;
+                  })}
+                </div>
               </div>
 
               {/* Metadata row */}

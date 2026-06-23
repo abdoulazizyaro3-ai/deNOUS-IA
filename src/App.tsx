@@ -13,6 +13,7 @@ import ExplorerAfrique from "./pages/ExplorerAfrique";
 import Parametres from "./pages/Parametres";
 import MonCompte from "./pages/MonCompte";
 import Admin from "./pages/Admin";
+import Auth from "./pages/Auth";
 
 interface Message {
   sender: "user" | "ai";
@@ -25,6 +26,9 @@ interface Message {
 import { useRealtimeVocal } from "./hooks/useRealtimeVocal";
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
   const [activeTab, setActiveTab] = useState<string>("Assistant vocal");
   const [selectedLanguage, setSelectedLanguage] = useState<string>("Français");
   const [hasInteracted, setHasInteracted] = useState(false);
@@ -52,7 +56,7 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [messages, setMessages] = useState<Message[]>([
-    { sender: "ai", text: "Bonjour Aminata ! Bienvenue sur deNOUS AI. Que souhaitez-vous savoir aujourd'hui ?", timestamp: "11:40" },
+    { sender: "ai", text: "Bonjour ! Bienvenue sur deNOUS AI. Que souhaitez-vous savoir aujourd'hui ?", timestamp: "11:40" },
   ]);
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [newSavoirText, setNewSavoirText] = useState("");
@@ -68,7 +72,23 @@ export default function App() {
     } catch (e) { console.error("Error fetching knowledge bank", e); }
   };
 
-  useEffect(() => { fetchNodes(); }, []);
+  const checkAuth = async () => {
+    try {
+      const res = await fetch("/api/me/");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.user) {
+          setIsAuthenticated(true);
+          setCurrentUser(data.user);
+        }
+      }
+    } catch (e) { console.error("Error checking auth", e); }
+  };
+
+  useEffect(() => { 
+    checkAuth();
+    fetchNodes(); 
+  }, []);
 
   useEffect(() => {
     let interval: any;
@@ -178,6 +198,12 @@ export default function App() {
     { label: "Mon compte", icon: User, desc: "Consulter votre compte d'utilisateur deNOUS AI" },
   ];
 
+  const isAdmin = currentUser?.profile?.role === "admin" || currentUser?.profile?.role === "moderator" || currentUser?.is_superuser;
+
+  if (!isAuthenticated) {
+    return <Auth onLoginSuccess={(u) => { setIsAuthenticated(true); setCurrentUser(u); }} />;
+  }
+
   return (
     <div id="app-container" className="min-h-screen bg-[#FAF6F0] bg-bogolan font-sans text-[#2B1810] flex flex-col md:flex-row relative overflow-hidden">
       <div className="absolute bottom-0 left-0 w-[240px] h-[340px] pointer-events-none opacity-[0.03] select-none z-0">
@@ -188,13 +214,7 @@ export default function App() {
       </div>
       <div className="absolute top-10 right-2 w-[280px] h-[320px] pointer-events-none opacity-[0.035] select-none z-0">
         <svg viewBox="0 0 100 100" className="w-full h-full fill-[#E8A33D]">
-          <path d="M10,40 Q25,25 45,35 Q30,50 10,40 Z M30,30 Q50,10 65,25 Q45,40 30,30 Z" />
-          <path d="M55,40 Q75,25 90,45 Q70,55 55,40 Z M25,60 Q45,50 60,68 Q40,75 25,60 Z" />
-        </svg>
-      </div>
-      <div className="absolute top-0 right-0 w-[50%] h-[100%] pointer-events-none opacity-[0.06] select-none z-0">
-        <svg viewBox="0 0 100 100" className="w-full h-full fill-[#C1561F]">
-          <path d="M 40,10 C 43,8 54,4 59,5 C 64,6 63,12 68,14 C 73,16 78,13 83,16 C 88,19 86,25 84,29 C 82,33 86,37 83,43 C 80,49 71,56 68,61 C 65,66 65,72 63,77 C 61,82 59,88 56,92 C 53,96 48,98 46,95 C 44,92 45,84 43,81 C 41,78 36,76 34,71 C 32,66 33,60 30,55 C 27,50 22,48 19,45 C 16,42 15,38 18,36 C 21,34 26,38 29,36 C 32,34 32,29 33,25 C 34,21 34,17 37,14 C 40,11 37,12 40,10 Z" />
+          <path d="M 50,5 L 60,35 L 90,40 L 65,60 L 75,90 L 50,70 L 25,90 L 35,60 L 10,40 L 40,35 Z" />
         </svg>
       </div>
 
@@ -213,12 +233,14 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-3 bg-[#C1561F]/5 p-3.5 rounded-2xl border border-[#C1561F]/15">
-            <div className="relative">
-              <img src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80&w=200" alt="Aminata D." className="w-12 h-12 rounded-full object-cover border-2 border-[#C1561F] shadow-sm" />
+            <div className="relative w-12 h-12 bg-[#F5ECE1] rounded-full border-2 border-[#C1561F] shadow-sm flex items-center justify-center shrink-0">
+              <User size={20} className="text-[#C1561F]" />
               <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[#3D6B35] border-2 border-white rounded-full animate-pulse" />
             </div>
-            <div>
-              <h4 className="text-sm font-black text-[#2B1810] tracking-tight">Aminata D.</h4>
+            <div className="overflow-hidden">
+              <h4 className="text-sm font-black text-[#2B1810] tracking-tight truncate">
+                {currentUser?.profile?.full_name || currentUser?.username || "Utilisateur"}
+              </h4>
               <p className="text-[11px] text-[#3D6B35] font-black flex items-center gap-1.5 mt-0.5">🟢 Session active</p>
             </div>
           </div>
@@ -229,6 +251,7 @@ export default function App() {
             <p className="text-[10px] uppercase font-black tracking-wider text-[#C1561F] px-3 mb-1.5 sr-only">Navigation</p>
             <nav className="flex flex-col space-y-1">
               {navItems.map((btn) => {
+                if (btn.label === "Administration" && !isAdmin) return null;
                 const IconComp = btn.icon;
                 const isActive = activeTab === btn.label;
                 return (
@@ -290,6 +313,7 @@ export default function App() {
 
         {activeTab === "Assistant vocal" && (
             <AssistantVocal
+              currentUser={currentUser}
               voiceState={realtime.voiceState}
               recordingSeconds={recordingSeconds}
               showVocalResponse={showVocalResponse}
@@ -312,7 +336,17 @@ export default function App() {
         {activeTab === "Messages" && <Messages messages={messages} keyboardText={keyboardText} setKeyboardText={setKeyboardText} handleQuerySubmit={handleChatQuerySubmit} setMessages={setMessages} speakText={speakText} fileInputRef={fileInputRef} attachedFile={attachedFile} setAttachedFile={setAttachedFile} />}
         {activeTab === "Explorer l'Afrique" && <ExplorerAfrique searchQuery={searchQuery} setSearchQuery={setSearchQuery} handleSuggestionClick={handleSuggestionClick} />}
         {activeTab === "Paramètres" && <Parametres />}
-        {activeTab === "Mon compte" && <MonCompte />}
+        {activeTab === "Mon compte" && <MonCompte currentUser={currentUser} onLogout={async () => {
+          try {
+            await fetch('/api/logout/', { method: 'POST' });
+          } catch (e) {
+            console.error("Logout error", e);
+          } finally {
+            setIsAuthenticated(false);
+            setCurrentUser(null);
+            setActiveTab("Assistant vocal");
+          }
+        }} />}
         {activeTab === "Administration" && <Admin />}
       </main>
     </div>

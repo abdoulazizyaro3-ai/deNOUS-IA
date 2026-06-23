@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { KnowledgeNode, ArchiveItem } from "../types";
 import AdminExploreAfrica from "./AdminExploreAfrica";
+import AdminUsers from "./AdminUsers";
 
 interface DictionaryItem {
   id: string;
@@ -740,6 +741,16 @@ export default function Admin() {
           >
             🌍 Explorer l'Afrique
           </button>
+          <button
+            onClick={() => { setActiveTab("users"); setSearchTerm(""); }}
+            className={`px-4 py-2.5 rounded-xl text-xs font-black tracking-normal transition-all duration-150 ${
+              activeTab === "users"
+                ? "bg-[#F5ECE1] text-[#C1561F] shadow-sm"
+                : "text-[#2B1810]/70 hover:bg-[#F5ECE1]/40"
+            }`}
+          >
+            👥 Utilisateurs
+          </button>
         </div>
 
         <div className="relative flex-1 max-w-md">
@@ -1171,6 +1182,11 @@ export default function Admin() {
       {/* --- TAB 5: EXPLORE AFRICA --- */}
       {activeTab === "countries" && (
         <AdminExploreAfrica searchTerm={searchTerm} />
+      )}
+
+      {/* --- TAB 6: USERS --- */}
+      {activeTab === "users" && (
+        <AdminUsers />
       )}
 
       {/* --- NODE MODAL (CREATE / EDIT) --- */}

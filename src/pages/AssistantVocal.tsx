@@ -17,6 +17,7 @@ import {
 } from "../components/Illustrations";
 
 interface AssistantVocalProps {
+  currentUser?: any;
   voiceState: "idle" | "listening" | "thinking" | "speaking" | "interrupted" | "processing" | "playing";
   recordingSeconds: number;
   showVocalResponse: boolean;
@@ -29,14 +30,15 @@ interface AssistantVocalProps {
   speakText: (text: string, audioBase64?: string) => void;
   stopSpeaking: () => void;
   setShowVocalResponse: (v: boolean) => void;
-  setVoiceState: (v: "idle" | "listening" | "processing" | "playing" | "thinking" | "speaking" | "interrupted") => void;
+  setVoiceState: (v: "idle" | "listening" | "thinking" | "speaking" | "interrupted" | "processing" | "playing") => void;
   carouselRef: React.RefObject<HTMLDivElement>;
-  scrollCarousel: (dir: "left" | "right") => void;
+  scrollCarousel: (dir: number) => void;
   transcript: string;
-  aiAudioOutput: string;
+  aiAudioOutput: string | null;
 }
 
 export default function AssistantVocal({
+  currentUser,
   voiceState,
   recordingSeconds,
   showVocalResponse,
@@ -59,7 +61,7 @@ export default function AssistantVocal({
     <div className="flex-1 flex flex-col justify-start px-4 md:px-12 pb-6 pt-2 gap-4 max-w-[1100px] w-full mx-auto relative z-10 bg-[#FAF6F0]/20 bg-bogolan/10 rounded-3xl mt-1 border border-[#EADBC8]/50">
       <div className="text-center space-y-1 py-1.5">
         <h2 className="text-lg md:text-xl font-bold font-display tracking-tight text-[#2B1810] flex items-center justify-center gap-1.5">
-          Bonjour <span className="text-[#C1561F]">Aminata D.</span> 👋
+          Bonjour <span className="text-[#C1561F]">{currentUser?.profile?.full_name || currentUser?.username || "Utilisateur"}</span> 👋
         </h2>
       </div>
 
