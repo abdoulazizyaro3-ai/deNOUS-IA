@@ -7,7 +7,7 @@ from google.genai import types
 from django.conf import settings
 import os
 
-from sanka_app.agents.collector import search_local_database
+from agents.collector import search_local_database
 from asgiref.sync import sync_to_async
 
 class VocalAgentConsumer(AsyncWebsocketConsumer):
@@ -99,7 +99,7 @@ class VocalAgentConsumer(AsyncWebsocketConsumer):
         
         try:
             async with self.client.aio.live.connect(
-                model="gemini-2.0-flash-exp",
+                model="gemini-2.0-flash",
                 config={
                     "response_modalities": ["AUDIO"], 
                     "tools": self.tools,

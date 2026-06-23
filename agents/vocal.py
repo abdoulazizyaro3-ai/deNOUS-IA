@@ -2,7 +2,7 @@
 import datetime
 import json
 from typing import Dict, Any, List, Optional
-from sanka_app.agents.collector import search_local_database
+from agents.collector import search_local_database
 
 
 def run_vocal_agent(

@@ -22,7 +22,7 @@ from sanka_app.models import (
 )
 
 # Import des agents depuis le package
-from sanka_app.agents import (
+from agents import (
     run_coordinator_agent,
     run_collector_agent,
     run_structurer_agent,

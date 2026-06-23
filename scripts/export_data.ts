@@ -1,6 +1,6 @@
 import fs from 'fs';
-import { countriesData } from './src/data/explore-africa/data';
-import { countriesDetails } from './src/data/explore-africa/countryDetails';
+import { countriesData } from '../src/data/explore-africa/data';
+import { countriesDetails } from '../src/data/explore-africa/countryDetails';
 
 const output = {
   countriesData,
