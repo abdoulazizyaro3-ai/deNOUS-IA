@@ -3,15 +3,9 @@ from sanka_app.models import (
     Profile, KnowledgeNode, Conversation, Message, KnowledgeLink,
     ActivityLog, Notification, MediaResource, Document, DocumentVersion,
     DocumentAnnotation, DocumentProcessing, LocalDictionary, LocalArchive,
-    LocalAudio, ExploreCountry, ExploreLandmark,
+    ExploreCountry, ExploreLandmark,
     ExploreDemography, ExploreEconomy, ExploreLanguage
 )
-
-@admin.register(LocalAudio)
-class LocalAudioAdmin(admin.ModelAdmin):
-    list_display = ('title', 'language', 'dialect', 'created_at')
-    list_filter = ('language',)
-    search_fields = ('title', 'description', 'transcript')
 
 class ExploreDemographyInline(admin.StackedInline):
     model = ExploreDemography

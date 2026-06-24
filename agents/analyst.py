@@ -27,7 +27,7 @@ def run_analyst_agent(
         params = {}
 
     if isinstance(client, dict):
-        client = client.get("openai")
+        client = client.get("gemini")
 
     # Extraire les paramètres depuis le dict
     topic = query
@@ -98,40 +98,55 @@ L'exploitation contemporaine de nos connaissances ancestrales africaines repose 
     # MODE AVEC GEMINI
     # ============================================================
     prompt = f"""
-    Génère un rapport d'analyse stratégique, universitaire et culturellement ancré sur le sujet suivant: "{topic}".
+    Évalue la fiabilité, la véracité et la pertinence des informations concernant le sujet suivant: "{topic}".
     Le thème central est: "{theme or "Non spécifié"}".
-    Sers-toi de ces nœuds de connaissances africains réels comme base de travail et d'illustrations empiriques:\n{nodes_context}
+    
+    Voici les données collectées et structurées:\n{nodes_context}
 
-    Le rapport doit impérativement comporter une structure universitaire soignée rédigée en français avec:
-    1. Un titre fort axé sur la souveraineté cognitive.
-    2. Une table des matières textuelle.
-    3. Une introduction historique et contemporaine de la problématique.
-    4. Un corps de texte détaillé découpé en sections.
-    5. Des recommandations précises pour les décideurs africains, les chercheurs et les entrepreneurs de la diaspora.
-    6. Une conclusion portant sur 'la conscience cognitive de Sankofa'.
+    Ton rôle est UNIQUEMENT de fact-checker ces informations.
+    Utilise 'google_search' pour vérifier si les données sont exactes, à jour et fiables.
+    
+    Tu dois renvoyer STRICTEMENT un objet JSON avec cette structure:
+    {{
+        "reliabilityScore": "High" | "Medium" | "Low",
+        "verifiedFacts": ["fait 1", "fait 2"],
+        "contradictions": ["contradiction 1"] ou [],
+        "analystNotes": "Bref commentaire critique sur la fiabilité"
+    }}
     """
 
     system_instruction = """
-    Tu es l'analyste principal de 'deNOUS AI' / 'Mémoire Africaine'.
-    Tu rédiges des rapports d'expertise et de stratégie d'une utilité capitale.
-    Garde un niveau de rédaction irréprochable, digne des grands think-tanks d'études d'Afrique souveraine.
+    Tu es l'analyste de fiabilité de 'deNOUS AI' / 'Mémoire Africaine'.
+    Ton rôle EXCLUSIF est de vérifier la fiabilité et la véracité des informations collectées.
+    N'hésite pas à utiliser 'google_search' pour recouper les sources.
+    Ne rédige JAMAIS le rapport final. Tu dois SEULEMENT renvoyer le JSON demandé.
     """
 
+    from google.genai import types
+
     try:
-        print(f"[Analyst Agent] Exécution du rapport sur le thème \"{topic}\" avec OpenAI (gpt-4o)...")
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": system_instruction},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.3
+        print(f"[Analyst Agent] Vérification de la fiabilité sur \"{topic}\" avec Gemini...")
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=system_instruction,
+                temperature=0.1,
+                response_mime_type="application/json",
+                tools=[{"google_search": {}}]
+            )
         )
 
-        report_text = response.choices[0].message.content or ""
+        try:
+            analysis_data = json.loads(response.text or "{}")
+        except json.JSONDecodeError:
+            analysis_data = {"analystNotes": "Erreur de décodage de l'analyse"}
+
+        # On retourne l'analyse PLUS les données structurées d'origine pour ne pas briser la chaîne
+        structured_data = params.get("structured_data", [])
         return {
-            "reportText": report_text,
-            "answerText": report_text,
+            "reliabilityAnalysis": analysis_data,
+            "structured_data": structured_data,
             "generatedAt": datetime.datetime.now().isoformat() + "Z",
             "nodesReferenced": [n["title"] for n in target_nodes],
             "isSimulated": False

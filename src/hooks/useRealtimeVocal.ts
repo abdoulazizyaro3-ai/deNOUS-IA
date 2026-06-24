@@ -53,6 +53,7 @@ export function useRealtimeVocal(): UseRealtimeVocalReturn {
     }
     setVoiceState('idle');
     setIsConnecting(false);
+    setIsMuted(false);
     playbackQueueRef.current = [];
     isPlayingRef.current = false;
     isTurnCompleteRef.current = false;
@@ -65,7 +66,10 @@ export function useRealtimeVocal(): UseRealtimeVocalReturn {
       isPlayingRef.current = false;
       if (voiceState === 'speaking') setVoiceState('idle'); // Or 'listening'
       if (isTurnCompleteRef.current) {
-        stopSession();
+        isTurnCompleteRef.current = false;
+        setIsMuted(false);
+        setVoiceState('listening');
+        setTranscript(''); // Clear previous transcript for the new turn
       }
       return;
     }
@@ -116,11 +120,12 @@ export function useRealtimeVocal(): UseRealtimeVocalReturn {
     }
   }, [playNextChunk]);
 
-  const startSession = async () => {
+  const startSession = async (language: string = 'Français') => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
     
     setIsConnecting(true);
     setTranscript('');
+    setIsMuted(false);
     isTurnCompleteRef.current = false;
     
     try {
@@ -131,7 +136,7 @@ export function useRealtimeVocal(): UseRealtimeVocalReturn {
       audioContextRef.current = audioCtx;
 
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws/vocal/`;
+      const wsUrl = `${protocol}//${window.location.host}/ws/vocal/?language=${encodeURIComponent(language)}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
@@ -160,7 +165,6 @@ export function useRealtimeVocal(): UseRealtimeVocalReturn {
         processor.onaudioprocess = (e) => {
           if (isMuted) return;
           if (ws.readyState !== WebSocket.OPEN) return;
-          if (voiceState === 'speaking' || voiceState === 'interrupted') return; // VAD basic: don't send while AI is speaking unless barge-in triggers
 
           const inputData = e.inputBuffer.getChannelData(0);
           
@@ -170,9 +174,11 @@ export function useRealtimeVocal(): UseRealtimeVocalReturn {
           const avgVolume = sum / inputData.length;
 
           // Barge-in logic: if user speaks loud while AI is speaking
-          if (avgVolume > 0.05 && voiceState === 'speaking') {
-            interrupt();
-            return;
+          if (isPlayingRef.current) {
+            if (avgVolume > 0.05) {
+              interrupt();
+            }
+            return; // Don't send audio while AI is playing
           }
 
           // Send PCM 16-bit to server
@@ -215,10 +221,13 @@ export function useRealtimeVocal(): UseRealtimeVocalReturn {
           alert("Erreur vocale : " + data.message);
           stopSession();
         } else if (data.type === 'turn_complete') {
-          // The AI finished its turn. We close the session after playback completes.
+          // The AI finished its turn. We reset state after playback completes.
           isTurnCompleteRef.current = true;
           if (!isPlayingRef.current && playbackQueueRef.current.length === 0) {
-            stopSession();
+            isTurnCompleteRef.current = false;
+            setIsMuted(false);
+            setVoiceState('listening');
+            setTranscript(''); // Clear previous transcript
           }
         }
       };

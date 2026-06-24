@@ -96,22 +96,40 @@ def run_coordinator_agent(
                 else:
                     agent_result = agents[agent_name](client, user_query, merged_params)
 
-                last_successful_output = agent_result
+                if isinstance(agent_result, dict) and "error" in agent_result and "answerText" not in agent_result:
+                    print(f"[Coordinateur] L'agent {agent_name} a renvoyé une erreur: {agent_result.get('error')}")
+                    results.append({
+                        "agent": agent_name,
+                        "action": action,
+                        "result": agent_result,
+                        "status": "failed",
+                        "error": agent_result.get("error"),
+                        "timestamp": datetime.datetime.now().isoformat() + "Z"
+                    })
+                    logs.append({
+                        "timestamp": datetime.datetime.now().isoformat() + "Z",
+                        "step": f"agent_execution_{agent_name}",
+                        "agent": agent_name,
+                        "status": "failed",
+                        "error": agent_result.get("error")
+                    })
+                else:
+                    last_successful_output = agent_result
 
-                results.append({
-                    "agent": agent_name,
-                    "action": action,
-                    "result": agent_result,
-                    "status": "success",
-                    "timestamp": datetime.datetime.now().isoformat() + "Z"
-                })
-                
-                logs.append({
-                    "timestamp": datetime.datetime.now().isoformat() + "Z",
-                    "step": f"agent_execution_{agent_name}",
-                    "agent": agent_name,
-                    "status": "success"
-                })
+                    results.append({
+                        "agent": agent_name,
+                        "action": action,
+                        "result": agent_result,
+                        "status": "success",
+                        "timestamp": datetime.datetime.now().isoformat() + "Z"
+                    })
+                    
+                    logs.append({
+                        "timestamp": datetime.datetime.now().isoformat() + "Z",
+                        "step": f"agent_execution_{agent_name}",
+                        "agent": agent_name,
+                        "status": "success"
+                    })
                 
             except Exception as e:
                 error_msg = str(e)
@@ -250,14 +268,18 @@ def determine_strategy(intent: Dict[str, Any], metadata: Dict[str, Any], availab
             "description": "Collecte d'informations",
             "steps": [
                 {"agent": "collector", "action": "search", "params": {"source": "all"}},
-                {"agent": "structurer", "action": "structure", "params": {"format": "json"}}
+                {"agent": "structurer", "action": "structure", "params": {"format": "json"}},
+                {"agent": "analyst", "action": "verify", "params": {"depth": "normal"}},
+                {"agent": "exploitation", "action": "respond", "params": {"style": "conversational"}}
             ]
         },
         "structure": {
             "description": "Structuration de données",
             "steps": [
                 {"agent": "collector", "action": "search", "params": {"source": "database"}},
-                {"agent": "structurer", "action": "structure", "params": {"format": "json"}}
+                {"agent": "structurer", "action": "structure", "params": {"format": "json"}},
+                {"agent": "analyst", "action": "verify", "params": {"depth": "normal"}},
+                {"agent": "exploitation", "action": "respond", "params": {"style": "conversational"}}
             ]
         },
         "analyze": {
@@ -265,7 +287,8 @@ def determine_strategy(intent: Dict[str, Any], metadata: Dict[str, Any], availab
             "steps": [
                 {"agent": "collector", "action": "search", "params": {"source": "all"}},
                 {"agent": "structurer", "action": "structure", "params": {"format": "json"}},
-                {"agent": "analyst", "action": "analyze", "params": {"depth": "deep"}}
+                {"agent": "analyst", "action": "analyze", "params": {"depth": "deep"}},
+                {"agent": "exploitation", "action": "respond", "params": {"style": "report"}}
             ]
         },
         "vocal": {
@@ -273,6 +296,7 @@ def determine_strategy(intent: Dict[str, Any], metadata: Dict[str, Any], availab
             "steps": [
                 {"agent": "collector", "action": "search", "params": {"source": "database"}},
                 {"agent": "structurer", "action": "structure", "params": {"format": "json"}},
+                {"agent": "analyst", "action": "verify", "params": {"depth": "normal"}},
                 {"agent": "exploitation", "action": "respond", "params": {"style": "conversational"}}
             ]
         },
@@ -287,7 +311,8 @@ def determine_strategy(intent: Dict[str, Any], metadata: Dict[str, Any], availab
             "steps": [
                 {"agent": "collector", "action": "search", "params": {"source": "all"}},
                 {"agent": "structurer", "action": "structure", "params": {"format": "json"}},
-                {"agent": "analyst", "action": "generate_report", "params": {"format": "markdown"}}
+                {"agent": "analyst", "action": "verify", "params": {"depth": "deep"}},
+                {"agent": "exploitation", "action": "respond", "params": {"style": "report"}}
             ]
         },
         "general": {

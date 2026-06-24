@@ -229,19 +229,23 @@ def search_online(client: Any, query: str, params: Dict[str, Any]) -> List[Dict[
             contents=prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
+                temperature=0.2,
                 response_mime_type="application/json",
                 tools=[{"google_search": {}}]
             )
         )
         
-        parsed = json.loads(response.text or "[]")
+        try:
+            items = json.loads(response.text)
+        except json.JSONDecodeError:
+            items = []
         
-        if isinstance(parsed, list):
-            return parsed
-        elif isinstance(parsed, dict) and "results" in parsed:
-            return parsed["results"]
-        elif isinstance(parsed, dict):
-            return [parsed]
+        if isinstance(items, list):
+            return items
+        elif isinstance(items, dict) and "results" in items:
+            return items["results"]
+        elif isinstance(items, dict):
+            return [items]
         
         return []
     

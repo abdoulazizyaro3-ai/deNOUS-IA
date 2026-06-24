@@ -1,6 +1,18 @@
 import os
-from google import genai
+import requests
+from dotenv import load_dotenv
 
-client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
-for m in client.models.list():
-    print(m.name, getattr(m, 'supported_generation_methods', getattr(m, 'supported_methods', [])))
+load_dotenv()
+
+api_key = os.environ.get("OPENAI_API_KEY")
+response = requests.get(
+    "https://api.openai.com/v1/models",
+    headers={"Authorization": f"Bearer {api_key}"}
+)
+if response.status_code == 200:
+    models = response.json()["data"]
+    for m in models:
+        if "realtime" in m["id"] or "gpt-4" in m["id"]:
+            print(m["id"])
+else:
+    print("Error:", response.text)

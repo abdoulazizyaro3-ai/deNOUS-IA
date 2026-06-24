@@ -19,27 +19,11 @@ interface DictionaryItem {
   createdAt: string;
   updatedAt: string;
 }
-interface AudioItem {
-  id: string;
-  title: string;
-  language: string;
-  dialect: string;
-  description: string;
-  audioData: string | null;
-  fileName: string | null;
-  fileSize: number;
-  duration: string | null;
-  transcript: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState<"nodes" | "dictionaries" | "archives" | "audios" | "countries">("nodes");
+  const [activeTab, setActiveTab] = useState<"nodes" | "dictionaries" | "archives" | "countries">("nodes");
   const [nodes, setNodes] = useState<KnowledgeNode[]>([]);
   const [dictionaries, setDictionaries] = useState<DictionaryItem[]>([]);
   const [archives, setArchives] = useState<ArchiveItem[]>([]);
-  const [audios, setAudios] = useState<AudioItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -51,9 +35,8 @@ export default function Admin() {
   const [isNodeModalOpen, setIsNodeModalOpen] = useState(false);
   const [isDictModalOpen, setIsDictModalOpen] = useState(false);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
-  const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState<{ type: "node" | "dict" | "archive" | "audio"; id: string; name: string } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ type: "node" | "dict" | "archive"; id: string; name: string } | null>(null);
 
   // Forms state - Nodes
   const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
@@ -93,18 +76,6 @@ export default function Admin() {
   });
   const [archiveFile, setArchiveFile] = useState<File | null>(null);
 
-  // Forms state - Audios
-  const [editingAudioId, setEditingAudioId] = useState<string | null>(null);
-  const [audioForm, setAudioForm] = useState({
-    id: "",
-    title: "",
-    language: "dioula",
-    dialect: "",
-    description: "",
-    transcript: "",
-    duration: "",
-  });
-  const [audioFile, setAudioFile] = useState<File | null>(null);
 
   // Helper arrays for options
   const categoriesList = [
@@ -175,10 +146,7 @@ export default function Admin() {
       const archiveData = await archiveRes.json();
       if (archiveData && archiveData.archives) setArchives(archiveData.archives);
 
-      // 4. Fetch audios
-      const audioRes = await fetch("/api/audios");
-      const audioData = await audioRes.json();
-      if (audioData && audioData.audios) setAudios(audioData.audios);
+
     } catch (err: any) {
       setError("Erreur lors du chargement des données. Veuillez réessayer.");
     } finally {
@@ -484,105 +452,6 @@ export default function Admin() {
     }
   };
 
-  // --- AUDIO CRUD HANDLERS ---
-  const handleOpenAudioCreate = () => {
-    setEditingAudioId(null);
-    setAudioForm({
-      id: `audio_${Math.random().toString(36).substr(2, 9)}`,
-      title: "",
-      language: "dioula",
-      dialect: "",
-      description: "",
-      transcript: "",
-      duration: "",
-    });
-    setAudioFile(null);
-    setIsAudioModalOpen(true);
-  };
-
-  const handleOpenAudioEdit = (audio: AudioItem) => {
-    setEditingAudioId(audio.id);
-    setAudioForm({
-      id: audio.id,
-      title: audio.title || "",
-      language: audio.language || "dioula",
-      dialect: audio.dialect || "",
-      description: audio.description || "",
-      transcript: audio.transcript || "",
-      duration: audio.duration || "",
-    });
-    setAudioFile(null);
-    setIsAudioModalOpen(true);
-  };
-
-  const handleAudioSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!audioForm.title || !audioForm.language) {
-      showNotification("Le titre et la langue sont requis.", "error");
-      return;
-    }
-
-    setLoading(true);
-    const url = editingAudioId
-      ? `/api/audios/${editingAudioId}/update/`
-      : "/api/audios/create/";
-
-    const formData = new FormData();
-    formData.append("id", audioForm.id);
-    formData.append("title", audioForm.title);
-    formData.append("language", audioForm.language);
-    formData.append("dialect", audioForm.dialect);
-    formData.append("description", audioForm.description);
-    formData.append("transcript", audioForm.transcript);
-    formData.append("duration", audioForm.duration);
-    if (audioFile) formData.append("file", audioFile);
-
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success) {
-        showNotification(
-          editingAudioId ? "Audio mis à jour avec succès !" : "Nouvel audio ajouté !",
-          "success"
-        );
-        setIsAudioModalOpen(false);
-        fetchData();
-      } else {
-        showNotification(data.error || "Erreur d'enregistrement.", "error");
-      }
-    } catch (err) {
-      showNotification("Erreur réseau.", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleConfirmDeleteAudio = (id: string, name: string) => {
-    setDeleteConfirm({ type: "audio", id, name });
-  };
-
-  const handleDeleteAudio = async (id: string) => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/audios/${id}/delete/`, { method: "POST" });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        showNotification("Audio supprimé avec succès.", "success");
-        setDeleteConfirm(null);
-        fetchData();
-      } else {
-        showNotification(data.error || "Impossible de supprimer.", "error");
-      }
-    } catch (err) {
-      showNotification("Erreur réseau.", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // --- DATABASE RESET ---
   const handleResetDatabase = async () => {
@@ -721,16 +590,7 @@ export default function Admin() {
           >
             📂 Archives PDF ({archives.length})
           </button>
-          <button
-            onClick={() => { setActiveTab("audios"); setSearchTerm(""); }}
-            className={`px-4 py-2.5 rounded-xl text-xs font-black tracking-normal transition-all duration-150 ${
-              activeTab === "audios"
-                ? "bg-[#F5ECE1] text-[#C1561F] shadow-sm"
-                : "text-[#2B1810]/70 hover:bg-[#F5ECE1]/40"
-            }`}
-          >
-            🎙️ Audios Locaux ({audios.length})
-          </button>
+
           <button
             onClick={() => { setActiveTab("countries"); setSearchTerm(""); }}
             className={`px-4 py-2.5 rounded-xl text-xs font-black tracking-normal transition-all duration-150 ${
@@ -1073,111 +933,6 @@ export default function Admin() {
         </div>
       )}
 
-      {/* --- TAB 4: AUDIOS LOCAUX --- */}
-      {activeTab === "audios" && (
-        <div className="bg-white rounded-3xl border border-[#EADBC8] shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-[#EADBC8] flex justify-between items-center bg-[#FAF6F0]/50">
-            <div>
-              <h3 className="text-sm font-black text-[#2B1810] tracking-tight">Liste des Audios Locaux</h3>
-              <p className="text-[10px] text-[#2B1810]/50 font-medium">Audios utilisés par l'assistant pour comprendre les accents et découvrir de nouveaux mots.</p>
-            </div>
-            <button
-              onClick={handleOpenAudioCreate}
-              className="flex items-center gap-1 px-3.5 py-2 bg-[#C1561F] hover:bg-[#A94A1A] text-white rounded-xl text-xs font-black shadow-sm transition"
-            >
-              <Plus size={14} />
-              Ajouter un Audio
-            </button>
-          </div>
-
-          <div className="overflow-x-auto">
-            {loading && audios.length === 0 ? (
-              <div className="p-12 text-center text-xs text-slate-400">
-                <RefreshCw className="animate-spin mx-auto mb-2 text-[#C1561F]" size={24} />
-                Chargement des audios...
-              </div>
-            ) : filteredAudios.length === 0 ? (
-              <div className="p-12 text-center text-xs text-slate-400">
-                Aucun audio trouvé.
-              </div>
-            ) : (
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-[#FAF6F0] text-[#2B1810]/70 border-b border-[#EADBC8]">
-                    <th className="p-4 font-black">ID</th>
-                    <th className="p-4 font-black">Titre</th>
-                    <th className="p-4 font-black">Langue / Dialecte</th>
-                    <th className="p-4 font-black">Transcription / Notes</th>
-                    <th className="p-4 font-black">Fichier Audio</th>
-                    <th className="p-4 font-black text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#EADBC8]/50">
-                  {filteredAudios.map((audio) => (
-                    <tr key={audio.id} className="hover:bg-[#FAF6F0]/30 transition-all">
-                      <td className="p-4 font-mono text-[10px] text-slate-400 truncate max-w-[80px]">{audio.id}</td>
-                      <td className="p-4">
-                        <div className="font-bold text-[#2B1810]">{audio.title}</div>
-                        <div className="text-[10px] text-[#2B1810]/50 truncate max-w-[150px]">{audio.description || "Aucune description."}</div>
-                      </td>
-                      <td className="p-4">
-                        <span className="inline-block px-2 py-0.5 bg-[#FAF6F0] border border-[#EADBC8] text-[10px] text-[#C1561F] font-bold rounded-md mr-1.5 uppercase">
-                          {audio.language}
-                        </span>
-                        {audio.dialect && <span className="text-[10px] text-slate-500 capitalize">({audio.dialect})</span>}
-                      </td>
-                      <td className="p-4 text-[#2B1810]/80">
-                        <div className="text-[10px] max-w-[200px] truncate" title={audio.transcript}>
-                          {audio.transcript || <span className="text-slate-300 italic">Aucune transcription</span>}
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        {audio.audioData ? (
-                          <div className="flex flex-col gap-1">
-                            <a 
-                              href={audio.audioData} 
-                              download={audio.fileName || "audio_export"}
-                              className="text-xs text-[#C1561F] font-bold hover:underline flex items-center gap-1"
-                            >
-                              <FileText size={13} />
-                              <span className="truncate max-w-[120px]">{audio.fileName || "Fichier Audio"}</span>
-                            </a>
-                            <audio src={audio.audioData} controls className="h-6 w-32 mt-1" />
-                            <div className="flex items-center gap-2 text-[10px] text-slate-400 font-medium">
-                              <span>{formatBytes(audio.fileSize)}</span>
-                              {audio.duration && <span>• {audio.duration}</span>}
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-slate-400 italic">Aucun fichier</span>
-                        )}
-                      </td>
-                      <td className="p-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => handleOpenAudioEdit(audio)}
-                            className="p-1.5 text-blue-600 hover:bg-blue-50 border border-transparent hover:border-blue-100 rounded-lg transition"
-                            title="Modifier"
-                          >
-                            <Edit2 size={13} />
-                          </button>
-                          <button
-                            onClick={() => handleConfirmDeleteAudio(audio.id, audio.title)}
-                            className="p-1.5 text-red-600 hover:bg-red-50 border border-transparent hover:border-red-100 rounded-lg transition"
-                            title="Supprimer"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* --- TAB 5: EXPLORE AFRICA --- */}
       {activeTab === "countries" && (
@@ -1607,151 +1362,7 @@ export default function Admin() {
         </div>
       )}
 
-      {/* --- AUDIO MODAL (CREATE / EDIT) --- */}
-      {isAudioModalOpen && (
-        <div className="fixed inset-0 bg-[#2B1810]/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-2xl rounded-3xl border border-[#EADBC8] shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="px-6 py-4 border-b border-[#EADBC8] flex justify-between items-center bg-[#FAF6F0]">
-              <h3 className="font-black text-sm text-[#2B1810] flex items-center gap-1.5">
-                {editingAudioId ? "🎙️ Modifier l'Audio" : "➕ Ajouter un Audio"}
-              </h3>
-              <button 
-                onClick={() => setIsAudioModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
-              >
-                <X size={18} />
-              </button>
-            </div>
 
-            <form onSubmit={handleAudioSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-black text-[#2B1810]/70">Identifiant Unique (ID)</label>
-                <input
-                  type="text"
-                  value={audioForm.id}
-                  onChange={(e) => setAudioForm({ ...audioForm, id: e.target.value })}
-                  disabled={!!editingAudioId}
-                  placeholder="audio_123"
-                  className="w-full p-2.5 bg-[#FAF6F0] border border-[#EADBC8] rounded-xl text-xs disabled:opacity-50"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-black text-[#2B1810]/70">Titre de l'audio</label>
-                <input
-                  type="text"
-                  value={audioForm.title}
-                  onChange={(e) => setAudioForm({ ...audioForm, title: e.target.value })}
-                  placeholder="Ex: Prononciation des mots de base en Bambara"
-                  className="w-full p-2.5 bg-[#FAF6F0] border border-[#EADBC8] rounded-xl text-xs"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-black text-[#2B1810]/70">Langue ciblée</label>
-                  <select
-                    value={audioForm.language}
-                    onChange={(e) => setAudioForm({ ...audioForm, language: e.target.value })}
-                    className="w-full p-2.5 bg-[#FAF6F0] border border-[#EADBC8] rounded-xl text-xs font-bold text-[#2B1810]"
-                  >
-                    {languagesList.map(l => (
-                      <option key={l.value} value={l.value}>{l.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-black text-[#2B1810]/70">Dialecte ou accent (optionnel)</label>
-                  <input
-                    type="text"
-                    value={audioForm.dialect}
-                    onChange={(e) => setAudioForm({ ...audioForm, dialect: e.target.value })}
-                    placeholder="Ex: Jula de Bobo-Dioulasso"
-                    className="w-full p-2.5 bg-[#FAF6F0] border border-[#EADBC8] rounded-xl text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase font-black text-[#2B1810]/70">Durée (ex: 02:45)</label>
-                  <input
-                    type="text"
-                    value={audioForm.duration}
-                    onChange={(e) => setAudioForm({ ...audioForm, duration: e.target.value })}
-                    placeholder="MM:SS"
-                    className="w-full p-2.5 bg-[#FAF6F0] border border-[#EADBC8] rounded-xl text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-black text-[#2B1810]/70">Description / Contexte</label>
-                <textarea
-                  rows={2}
-                  value={audioForm.description}
-                  onChange={(e) => setAudioForm({ ...audioForm, description: e.target.value })}
-                  placeholder="Décrivez brièvement le contexte de cet audio..."
-                  className="w-full p-2.5 bg-[#FAF6F0] border border-[#EADBC8] rounded-xl text-xs resize-none"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-black text-[#2B1810]/70">Transcription / Explications (Recherche IA)</label>
-                <textarea
-                  rows={4}
-                  value={audioForm.transcript}
-                  onChange={(e) => setAudioForm({ ...audioForm, transcript: e.target.value })}
-                  placeholder="Écrivez la transcription de l'audio ou les notes pour l'IA..."
-                  className="w-full p-2.5 bg-[#FAF6F0] border border-[#EADBC8] rounded-xl text-xs resize-none"
-                />
-              </div>
-
-              {/* Audio File Ingestion */}
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase font-black text-[#2B1810]/70">Fichier Audio</label>
-                <div className="border-2 border-dashed border-[#EADBC8] hover:border-[#C1561F] rounded-2xl p-4 bg-[#FAF6F0]/30 transition text-center relative">
-                  <input
-                    type="file"
-                    accept="audio/*"
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        setAudioFile(e.target.files[0]);
-                      }
-                    }}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                  <Upload className="mx-auto text-slate-400 mb-2" size={24} />
-                  <p className="text-xs font-bold text-[#2B1810]/80">
-                    {audioFile ? `Fichier sélectionné : ${audioFile.name}` : "Cliquez ou glissez-déposez un fichier Audio ici"}
-                  </p>
-                  <p className="text-[10px] text-slate-400 mt-1">Audio uniquement (MP3, WAV, etc. Max 20MB)</p>
-                </div>
-              </div>
-
-              <div className="px-6 py-4 border-t border-[#EADBC8] flex justify-end gap-3 bg-[#FAF6F0] -mx-6 -mb-6">
-                <button
-                  type="button"
-                  onClick={() => setIsAudioModalOpen(false)}
-                  className="px-4 py-2 border border-[#EADBC8] hover:bg-slate-50 text-[#2B1810]/80 rounded-xl text-xs font-black transition"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-5 py-2 bg-[#C1561F] hover:bg-[#A94A1A] text-white rounded-xl text-xs font-black shadow-sm transition disabled:opacity-50"
-                >
-                  {loading ? "Traitement..." : editingAudioId ? "Enregistrer" : "Créer l'audio"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* --- CONFIRM RESET MODAL --- */}
       {isResetConfirmOpen && (
@@ -1793,8 +1404,7 @@ export default function Admin() {
               <p className="text-xs text-[#2B1810]/60">
                 Êtes-vous sûr de vouloir supprimer {
                   deleteConfirm.type === "node" ? "le savoir" : 
-                  deleteConfirm.type === "dict" ? "le dictionnaire" : 
-                  deleteConfirm.type === "audio" ? "l'audio" : "l'archive"
+                  deleteConfirm.type === "dict" ? "le dictionnaire" : "l'archive"
                 } :<br/>
                 <span className="font-bold text-[#2B1810] italic">"{deleteConfirm.name}"</span> ?
               </p>
@@ -1810,7 +1420,6 @@ export default function Admin() {
                 onClick={() => {
                   if (deleteConfirm.type === "node") handleDeleteNode(deleteConfirm.id);
                   else if (deleteConfirm.type === "dict") handleDeleteDict(deleteConfirm.id);
-                  else if (deleteConfirm.type === "audio") handleDeleteAudio(deleteConfirm.id);
                   else handleDeleteArchive(deleteConfirm.id);
                 }}
                 disabled={loading}

@@ -147,7 +147,7 @@ export default function App() {
   const toggleListening = () => {
     if (realtime.voiceState === 'idle' || realtime.voiceState === 'interrupted') {
       setShowVocalResponse(true);
-      realtime.startSession();
+      realtime.startSession(selectedLanguage);
     } else if (realtime.voiceState === 'listening') {
       realtime.endTurn();
     } else if (realtime.voiceState === 'speaking' || realtime.voiceState === 'thinking') {
@@ -322,6 +322,7 @@ export default function App() {
               dynamicReliability={dynamicReliability}
               selectedLanguage={selectedLanguage}
               toggleListening={toggleListening}
+              stopSession={realtime.stopSession}
               handleSuggestionClick={handleSuggestionClick}
               speakText={speakText}
               stopSpeaking={stopSpeaking}
@@ -333,7 +334,7 @@ export default function App() {
               aiAudioOutput={aiAudioOutput}
             />
         )}
-        {activeTab === "Messages" && <Messages messages={messages} keyboardText={keyboardText} setKeyboardText={setKeyboardText} handleQuerySubmit={handleChatQuerySubmit} setMessages={setMessages} speakText={speakText} fileInputRef={fileInputRef} attachedFile={attachedFile} setAttachedFile={setAttachedFile} />}
+        {activeTab === "Messages" && <Messages currentUser={currentUser} messages={messages} keyboardText={keyboardText} setKeyboardText={setKeyboardText} handleQuerySubmit={handleChatQuerySubmit} setMessages={setMessages} speakText={speakText} fileInputRef={fileInputRef} attachedFile={attachedFile} setAttachedFile={setAttachedFile} />}
         {activeTab === "Explorer l'Afrique" && <ExplorerAfrique searchQuery={searchQuery} setSearchQuery={setSearchQuery} handleSuggestionClick={handleSuggestionClick} />}
         {activeTab === "Paramètres" && <Parametres />}
         {activeTab === "Mon compte" && <MonCompte currentUser={currentUser} onLogout={async () => {

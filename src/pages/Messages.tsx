@@ -18,6 +18,7 @@ interface MessagesProps {
   fileInputRef: React.RefObject<HTMLInputElement>;
   attachedFile: File | null;
   setAttachedFile: (f: File | null) => void;
+  currentUser?: any;
 }
 
 export default function Messages({
@@ -30,6 +31,7 @@ export default function Messages({
   fileInputRef,
   attachedFile,
   setAttachedFile,
+  currentUser,
 }: MessagesProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [isTyping, setIsTyping] = useState(false);
@@ -178,12 +180,8 @@ export default function Messages({
 
             {/* User avatar */}
             {m.sender === "user" && (
-              <div className="w-8 h-8 rounded-xl overflow-hidden shrink-0 mt-1 shadow-md">
-                <img
-                  src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80&w=200"
-                  alt="Aminata"
-                  className="w-full h-full object-cover"
-                />
+              <div className="w-8 h-8 rounded-xl bg-[#2B1810] flex items-center justify-center shrink-0 mt-1 shadow-md text-white font-bold text-sm">
+                {currentUser?.profile?.fullName ? currentUser.profile.fullName.charAt(0).toUpperCase() : currentUser?.username ? currentUser.username.charAt(0).toUpperCase() : "U"}
               </div>
             )}
           </div>

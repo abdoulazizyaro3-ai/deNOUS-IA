@@ -228,17 +228,7 @@ export default function CountryDescription({ countryId, countriesData }: Country
           </p>
         </div>
 
-        {/* QUICK META METRIC CORNER */}
-        <div className="z-10 grid grid-cols-2 md:grid-cols-1 gap-3 shrink-0 bg-stone-950/40 backdrop-blur-md p-4 rounded-2xl border border-stone-700/30">
-          <div className="space-y-0.5 min-w-[115px]">
-            <p className="text-[9px] font-mono text-stone-400 uppercase tracking-wider">Population</p>
-            <p className="text-xs font-sans font-black text-white">{currentCountry.population} hab</p>
-          </div>
-          <div className="space-y-0.5 min-w-[115px]">
-            <p className="text-[9px] font-mono text-stone-400 uppercase tracking-wider">Devise Locale</p>
-            <p className="text-xs font-sans font-black text-amber-300">{currentCountry.currency}</p>
-          </div>
-        </div>
+
       </div>
 
       {/* DETAILED CONTENT HUB GRID */}

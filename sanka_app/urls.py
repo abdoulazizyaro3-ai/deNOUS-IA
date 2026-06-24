@@ -72,17 +72,6 @@ urlpatterns = [
     path('api/archives/<str:archive_id>/delete', views.delete_archive, name='delete_archive_no_slash'),
     path('api/archives/<str:archive_id>/delete/', views.delete_archive, name='delete_archive'),
     
-    # ============================================================
-    # AUDIOS CRUD
-    # ============================================================
-    path('api/audios', views.list_audios, name='list_audios_no_slash'),
-    path('api/audios/', views.list_audios, name='list_audios'),
-    path('api/audios/create', views.create_audio, name='create_audio_no_slash'),
-    path('api/audios/create/', views.create_audio, name='create_audio'),
-    path('api/audios/<str:audio_id>/update', views.update_audio, name='update_audio_no_slash'),
-    path('api/audios/<str:audio_id>/update/', views.update_audio, name='update_audio'),
-    path('api/audios/<str:audio_id>/delete', views.delete_audio, name='delete_audio_no_slash'),
-    path('api/audios/<str:audio_id>/delete/', views.delete_audio, name='delete_audio'),
     
     # ============================================================
     # ASSISTANT VOCAL

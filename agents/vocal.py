@@ -133,34 +133,6 @@ def build_vocal_prompt(query: str, language: str, persona: str, structured_data:
     except Exception as e:
         print(f"[Vocal] Erreur lecture ressource linguistique pour {language}: {e}")
 
-    try:
-        from sanka_app.models import LocalAudio
-        from django.db.models import Q
-        
-        # Mapping simple pour normaliser la recherche de langue
-        mapped_lang = language_lower
-        if mapped_lang in ["mooré", "mòoré"]: mapped_lang = "moore"
-        if mapped_lang in ["jula", "dyula"]: mapped_lang = "dioula"
-        if mapped_lang in ["bamanankan"]: mapped_lang = "bambara"
-
-        audios = LocalAudio.objects.filter(
-            Q(language__icontains=mapped_lang) | Q(language__icontains=language_lower)
-        )
-        
-        if audios.exists():
-            additional_context += f"\n\n[INFORMATIONS AUDIO LOCALES POUR {language.upper()}]\n"
-            additional_context += "Utilise ces informations provenant des enregistrements audios locaux (accents, dialectes, vocabulaire) :\n"
-            for audio in audios:
-                audio_desc = f"- Titre: {audio.title}"
-                if audio.dialect:
-                    audio_desc += f" (Dialecte: {audio.dialect})"
-                if audio.description:
-                    audio_desc += f"\n  Description: {audio.description}"
-                if audio.transcript:
-                    audio_desc += f"\n  Transcription/Notes: {audio.transcript}"
-                additional_context += f"{audio_desc}\n"
-    except Exception as e:
-        print(f"[Vocal] Erreur lors de la récupération des audios locaux: {e}")
 
             
     return f"""

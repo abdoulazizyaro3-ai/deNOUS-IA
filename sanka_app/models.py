@@ -917,64 +917,6 @@ class LocalArchive(models.Model):
 
 
 # ============================================
-# 12. TABLE DES AUDIOS LOCAUX (ACCENTS & INFOS)
-# ============================================
-class LocalAudio(models.Model):
-    """
-    Table audio pour stocker les enregistrements vocaux utilisés par l'assistant vocal
-    pour comprendre les accents locaux et acquérir de nouvelles informations (oralité).
-    """
-    LANGUAGE_CHOICES = [
-        ('dioula', 'Dioula'),
-        ('bambara', 'Bambara'),
-        ('moore', 'Mooré'),
-        ('french', 'Français'),
-        ('other', 'Autre'),
-    ]
-    
-    audio_id = models.CharField(max_length=255, primary_key=True)
-    title = models.CharField(max_length=500)
-    language = models.CharField(max_length=50, choices=LANGUAGE_CHOICES)
-    dialect = models.CharField(max_length=100, blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
-    
-    audio_data = models.TextField(blank=True, null=True, help_text="Données audio en Base64")
-    file_name = models.CharField(max_length=500, blank=True, null=True)
-    file_size = models.BigIntegerField(default=0)
-    duration = models.CharField(max_length=50, blank=True, null=True)
-    
-    transcript = models.TextField(blank=True, null=True, help_text="Transcription ou informations extraites de l'audio")
-    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    def to_dict(self):
-        return {
-            "id": self.audio_id,
-            "title": self.title,
-            "language": self.language,
-            "dialect": self.dialect,
-            "description": self.description,
-            "audioData": self.audio_data,
-            "fileName": self.file_name,
-            "fileSize": self.file_size,
-            "duration": self.duration,
-            "transcript": self.transcript,
-            "createdAt": self.created_at.isoformat() if self.created_at else None,
-            "updatedAt": self.updated_at.isoformat() if self.updated_at else None,
-        }
-
-    class Meta:
-        indexes = [
-            models.Index(fields=['language']),
-        ]
-        ordering = ['-created_at']
-        
-    def __str__(self):
-        return f"{self.title} ({self.get_language_display()})"
-
-
-# ============================================
 # 13. TABLE EXPLORE AFRICA
 # ============================================
 class ExploreCountry(models.Model):

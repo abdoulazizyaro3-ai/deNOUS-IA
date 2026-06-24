@@ -26,6 +26,7 @@ interface AssistantVocalProps {
   dynamicReliability: number;
   selectedLanguage: string;
   toggleListening: () => void;
+  stopSession: () => void;
   handleSuggestionClick: (text: string) => void;
   speakText: (text: string, audioBase64?: string) => void;
   stopSpeaking: () => void;
@@ -47,6 +48,7 @@ export default function AssistantVocal({
   dynamicReliability,
   selectedLanguage,
   toggleListening,
+  stopSession,
   handleSuggestionClick,
   speakText,
   stopSpeaking,
@@ -107,6 +109,16 @@ export default function AssistantVocal({
                 {(voiceState === "processing" || voiceState === "thinking") && "🌍 L'IA réfléchit..."}
                 {voiceState === "interrupted" && "Interrompu. Vous pouvez parler."}
               </p>
+              {voiceState !== "idle" && (
+                <div className="pt-2">
+                  <button 
+                    onClick={stopSession}
+                    className="px-4 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 text-xs font-bold rounded-full border border-red-200 transition-colors cursor-pointer"
+                  >
+                    ⏹️ Arrêter complètement la session
+                  </button>
+                </div>
+              )}
             </>
           )}
 
