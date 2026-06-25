@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import AfricaMap from "../components/explore-africa/AfricaMap";
 import CountryDescription from "../components/explore-africa/CountryDescription";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { Globe } from "lucide-react";
 
 interface ExplorerAfriqueProps {
   searchQuery?: string;
@@ -50,8 +51,8 @@ export default function ExplorerAfrique({ searchQuery, setSearchQuery, handleSug
       <header className="border-b border-stone-200/50 bg-white/70 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 via-amber-500 to-emerald-600 flex items-center justify-center text-white font-serif font-black shadow-md tracking-wider">
-              DA
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 via-amber-500 to-emerald-600 flex items-center justify-center text-white shadow-lg overflow-hidden">
+              <Globe className="w-5 h-5 animate-[spin_8s_linear_infinite] opacity-90" />
             </div>
             <div>
               <h1 className="font-serif font-extrabold text-lg sm:text-xl tracking-tight text-stone-900">
@@ -70,17 +71,23 @@ export default function ExplorerAfrique({ searchQuery, setSearchQuery, handleSug
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 space-y-2">
 
         {/* MAP & SELECTION HUB */}
-        <section id="interactive-map-hub" className="space-y-6">
-          <div className="text-center max-w-xl mx-auto space-y-2">
-            <h2 className="font-serif font-black text-2xl sm:text-3xl text-stone-900 tracking-tight">
+        <section id="interactive-map-hub" className="space-y-2">
+          <div className="text-center max-w-2xl mx-auto space-y-1.5 pt-0 pb-0">
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/10 to-emerald-500/10 border border-stone-200 text-stone-700 text-[10px] font-black uppercase tracking-widest shadow-sm"
+            >
+              <Globe className="w-3.5 h-3.5 text-amber-600 animate-[spin_4s_linear_infinite]" /> 
+              <span>Carte Interactive Intelligente</span>
+            </motion.div>
+            
+            <h2 className="font-serif font-black text-2xl sm:text-3xl lg:text-4xl bg-clip-text text-transparent bg-gradient-to-r from-stone-900 to-stone-600 tracking-tight">
               Sélectionnez une destination
             </h2>
-            <p className="text-sm text-stone-500 font-sans">
-              Explorez la géographie africaine via notre carte interactive. Cliquez sur une région d'intérêt ou recherchez un pays pour ouvrir son portail de voyage.
-            </p>
           </div>
 
           {isLoading ? (

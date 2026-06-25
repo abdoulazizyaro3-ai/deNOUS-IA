@@ -284,7 +284,7 @@ export default function App() {
       </aside>
 
       <main id="content-stage" className="flex-1 flex flex-col min-h-screen relative z-10 overflow-y-auto">
-        {activeTab !== "Messages" && (
+        {activeTab !== "Messages" && activeTab !== "Explorer l'Afrique" && (
           <header className="px-6 md:px-10 py-4 flex items-center justify-end gap-3 z-20">
             <div className="flex items-center gap-2 bg-[#F5ECE1] border border-[#C1561F]/25 rounded-full px-4 py-1.5 shadow-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />

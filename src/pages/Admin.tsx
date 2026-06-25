@@ -493,12 +493,7 @@ export default function Admin() {
     a.provenance.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredAudios = audios.filter(a => 
-    a.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    a.language.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    a.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    a.transcript.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return "0 Bytes";

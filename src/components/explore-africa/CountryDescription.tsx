@@ -29,7 +29,7 @@ interface CountryDescriptionProps {
 }
 
 // Inline helper for landmark modal details
-function getLandmarkDetails(id: string, fallbackName: string, fallbackDesc: string) {
+function getLandmarkDetails(landmark: any) {
   const categoryImages: Record<string, string[]> = {
     nature: [
       "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?q=80&w=1200&auto=format&fit=crop",
@@ -54,21 +54,30 @@ function getLandmarkDetails(id: string, fallbackName: string, fallbackDesc: stri
     ]
   };
 
-  const safeId = String(id || "").toLowerCase();
+  const safeId = String(landmark.id || "").toLowerCase();
   const isFestive = safeId.includes("fest") || safeId.includes("siao") || safeId.includes("fespaco") || safeId.includes("snc") || safeId.includes("amani") || safeId.includes("femua") || safeId.includes("jazz") || safeId.includes("art");
   const isTown = safeId.includes("mall") || safeId.includes("plaza") || safeId.includes("market") || safeId.includes("march") || safeId.includes("artisan") || safeId.includes("rood");
   
-  const chosenImages = isFestive ? categoryImages.festive : isTown ? categoryImages.town : categoryImages.nature;
+  const defaultImages = isFestive ? categoryImages.festive : isTown ? categoryImages.town : categoryImages.nature;
+
+  // Use dynamic images from admin if provided, otherwise fallback to defaults
+  const dynamicImages = [landmark.image1, landmark.image2, landmark.image3, landmark.image4, landmark.image5].filter(Boolean);
+  const finalImages = dynamicImages.length > 0 ? dynamicImages : defaultImages;
+
+  // Use dynamic text from admin if provided, otherwise fallback
+  const finalDetailedDescription = landmark.detailedDescription || `${landmark.description} Ce lieu exceptionnel incarne la grande richesse de la région. Visiter ${landmark.name} permet d'entrer en connexion directe avec la ferveur vibrante de ses habitants, d'admirer des techniques ou des reliefs préservés uniques et d'immortaliser des moments mémorables au cours de votre voyage d'exploration d'Afrique.`;
+  const finalWhyVisit = landmark.whyVisit || "Pour l'immersion intense et authentique au contact d'un patrimoine africain d'envergure mondiale.";
+  const finalPracticalTips = landmark.practicalTips ? landmark.practicalTips.split('\n').filter((t: string) => t.trim() !== '') : [
+    "Demandez des conseils avisés auprès d'un comptoir d'office de tourisme ou d'un guide officiel.",
+    "Prévoyez les rands, rands CFA ou livres locales nécessaires pour régler les taxes d'entrée.",
+    "Prenez soin de respecter l'écosystème local et les traditions sacrées en vigueur dans cette communauté."
+  ];
 
   return {
-    images: chosenImages,
-    detailedDescription: `${fallbackDesc} Ce lieu exceptionnel incarne la grande richesse de la région. Visiter ${fallbackName} permet d'entrer en connexion directe avec la ferveur vibrante de ses habitants, d'admirer des techniques ou des reliefs préservés uniques et d'immortaliser des moments mémorables au cours de votre voyage d'exploration d'Afrique.`,
-    whyVisit: "Pour l'immersion intense et authentique au contact d'un patrimoine africain d'envergure mondiale.",
-    practicalTips: [
-      "Demandez des conseils avisés auprès d'un comptoir d'office de tourisme ou d'un guide officiel.",
-      "Prévoyez les rands, rands CFA ou livres locales nécessaires pour régler les taxes d'entrée.",
-      "Prenez soin de respecter l'écosystème local et les traditions sacrées en vigueur dans cette communauté."
-    ]
+    images: finalImages,
+    detailedDescription: finalDetailedDescription,
+    whyVisit: finalWhyVisit,
+    practicalTips: finalPracticalTips
   };
 }
 
@@ -196,16 +205,21 @@ export default function CountryDescription({ countryId, countriesData }: Country
   return (
     <motion.div
       id="country-description-portal"
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 30 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="bg-white border border-stone-200/60 rounded-3xl shadow-md overflow-hidden"
+      initial={{ opacity: 0, y: 30, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 30, scale: 0.98 }}
+      transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+      className="bg-[#FAFAFA] border border-stone-200/50 rounded-[2rem] shadow-2xl overflow-hidden backdrop-blur-sm"
     >
       {/* HEADER HERO AREA */}
-      <div className="relative bg-gradient-to-r from-stone-900 via-stone-850 to-stone-800 p-6 md:p-8 text-white flex flex-col md:flex-row md:items-center justify-between gap-6 overflow-hidden">
+      <div className="relative bg-stone-950 p-6 md:p-8 text-white flex flex-col md:flex-row md:items-center justify-between gap-6 overflow-hidden">
+        {/* Dynamic Ambilight Background */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-40 select-none pointer-events-none overflow-hidden mix-blend-screen">
+          <span className="text-[300px] md:text-[500px] blur-[60px] opacity-30">{currentCountry.flagEmoji}</span>
+        </div>
+        
         {/* Decorative corner globe */}
-        <div className="absolute -right-10 -top-10 text-stone-700/25 text-9xl pointer-events-none select-none">
+        <div className="absolute -right-10 -top-10 text-stone-700/30 text-9xl pointer-events-none select-none z-0">
           🌍
         </div>
 
@@ -250,10 +264,10 @@ export default function CountryDescription({ countryId, countriesData }: Country
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-3.5 p-3.5 rounded-2xl border transition-all text-left focus:outline-none ${
+                    className={`flex items-center gap-3.5 p-3.5 rounded-2xl border transition-all duration-300 text-left focus:outline-none ${
                       isSelected
-                        ? "bg-stone-950 border-stone-950 text-white shadow-md font-bold"
-                        : "bg-white border-stone-200/60 text-stone-600 hover:text-stone-900 hover:bg-stone-50"
+                        ? "bg-stone-900 border-stone-800 text-white shadow-xl font-bold scale-[1.02] z-10"
+                        : "bg-white border-stone-200/60 text-stone-600 hover:text-stone-900 hover:bg-white hover:shadow-md hover:-translate-y-[1px]"
                     }`}
                   >
                     <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 transition-all ${
@@ -316,7 +330,7 @@ export default function CountryDescription({ countryId, countriesData }: Country
                       </div>
                     </div>
 
-                    <div className="bg-gradient-to-tr from-stone-50 to-white p-5 rounded-2xl border border-stone-200/70 shadow-xs space-y-3">
+                    <div className="bg-white p-5 rounded-2xl border border-stone-200/60 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 space-y-3">
                       <h5 className="font-serif font-bold text-sm text-stone-850">Introduction</h5>
                       <p className="text-stone-650 leading-relaxed font-sans text-xs md:text-sm">
                         {currentCountry.overview}
@@ -324,7 +338,7 @@ export default function CountryDescription({ countryId, countriesData }: Country
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-stone-50 p-5 rounded-2xl border border-stone-200/60 space-y-2">
+                      <div className="bg-white p-5 rounded-2xl border border-stone-200/60 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 space-y-2">
                         <div className="flex items-center gap-1.5 text-rose-600 font-serif font-extrabold text-xs uppercase tracking-wider">
                           <BookOpen className="w-4 h-4 shrink-0 text-rose-500" />
                           <span>Histoire & Souveraineté</span>
@@ -334,7 +348,7 @@ export default function CountryDescription({ countryId, countriesData }: Country
                         </p>
                       </div>
 
-                      <div className="bg-stone-50 p-5 rounded-2xl border border-stone-200/60 space-y-2">
+                      <div className="bg-white p-5 rounded-2xl border border-stone-200/60 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 space-y-2">
                         <div className="flex items-center gap-1.5 text-emerald-600 font-serif font-extrabold text-xs uppercase tracking-wider">
                           <Sparkles className="w-4 h-4 shrink-0 text-emerald-500" />
                           <span>Tissage culturel</span>
@@ -347,7 +361,7 @@ export default function CountryDescription({ countryId, countriesData }: Country
 
                     <div className="pt-2">
                       <p className="text-[10px] font-mono text-stone-450 uppercase tracking-widest block mb-2 px-1">Patrimoine gastronomique local</p>
-                      <div className="flex items-start gap-3 bg-emerald-50/30 p-4 rounded-xl border border-emerald-100/40 text-stone-700">
+                      <div className="flex items-start gap-3 bg-gradient-to-r from-emerald-50/50 to-white hover:shadow-md transition-all duration-300 p-4 rounded-xl border border-emerald-100/50 text-stone-700">
                         <UtensilsCrossed className="w-5 h-5 text-emerald-650 mt-0.5 shrink-0" />
                         <p className="text-xs font-sans leading-relaxed text-stone-600">
                           {details.gastronomy}
@@ -379,7 +393,7 @@ export default function CountryDescription({ countryId, countriesData }: Country
                             setSelectedLandmark(land);
                             setActiveImageIndex(0);
                           }}
-                          className="bg-white border border-stone-200 hover:border-rose-500 hover:shadow-lg rounded-2xl overflow-hidden group transition-all duration-350 cursor-pointer flex flex-col justify-between"
+                          className="bg-white border border-stone-200/60 hover:border-rose-300 shadow-sm hover:shadow-xl hover:-translate-y-1 rounded-[1.25rem] overflow-hidden group transition-all duration-300 cursor-pointer flex flex-col justify-between"
                         >
                           <div>
                             <div className="h-32 sm:h-36 w-full relative overflow-hidden bg-stone-100">
@@ -404,30 +418,14 @@ export default function CountryDescription({ countryId, countriesData }: Country
                               </div>
                             </div>
 
-                            <div className="p-4 space-y-2">
-                              <h5 className="font-serif font-black text-stone-900 text-xs sm:text-sm leading-tight group-hover:text-rose-650 transition duration-300">
+                            <div className="p-3.5 flex flex-col items-center justify-center text-center bg-white">
+                              <h5 className="font-serif font-black text-stone-900 text-sm leading-tight group-hover:text-rose-650 transition duration-300 mb-1.5">
                                 {land.name}
                               </h5>
-                              
-                              <p className="text-[10px] sm:text-xs text-stone-500 font-sans leading-relaxed line-clamp-2">
-                                {land.description}
+                              <p className="flex items-center gap-1 text-[10px] text-stone-500 font-mono">
+                                <MapPin className="w-3 h-3 text-rose-500" />
+                                <span className="truncate font-sans font-medium text-stone-600">{land.location}</span>
                               </p>
-                            </div>
-                          </div>
-
-                          <div className="p-4 pt-1.5 border-t border-stone-100 flex flex-col gap-1 text-[10px] text-stone-500 font-mono bg-stone-50/40">
-                            <p className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3 text-rose-500" />
-                              <span className="truncate font-sans font-medium text-stone-600">{land.location}</span>
-                            </p>
-                            <div className="flex items-center justify-between mt-1 text-[9px]">
-                              <span className="flex items-center gap-0.5 text-stone-400">
-                                <Calendar className="w-2.5 h-2.5" />
-                                Min: {land.dateRange || "Saison Sèche"}
-                              </span>
-                              <span className="px-1.5 py-0.5 bg-stone-200/65 text-stone-700 rounded font-sans font-bold">
-                                {land.price || "Entrée Libre"}
-                              </span>
                             </div>
                           </div>
                         </div>
@@ -451,32 +449,32 @@ export default function CountryDescription({ countryId, countriesData }: Country
 
                     {/* Meta Key Metrics Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      <div className="bg-stone-50 border border-stone-200 p-4.5 rounded-2xl text-left">
+                      <div className="bg-white border border-stone-200/60 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-4.5 rounded-2xl text-left">
                         <p className="text-[9px] font-mono uppercase tracking-wider text-stone-400 font-semibold leading-none">Population Totale</p>
                         <p className="text-sm font-sans font-black text-stone-900 mt-1 leading-snug">{details.demographics.total}</p>
                       </div>
 
-                      <div className="bg-stone-50 border border-stone-200 p-4.5 rounded-2xl text-left">
+                      <div className="bg-white border border-stone-200/60 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-4.5 rounded-2xl text-left">
                         <p className="text-[9px] font-mono uppercase tracking-wider text-stone-400 font-semibold leading-none">Densité moyenne</p>
                         <p className="text-sm font-sans font-black text-stone-900 mt-1 leading-snug">{details.demographics.density}</p>
                       </div>
 
-                      <div className="bg-stone-50 border border-stone-200 p-4.5 rounded-2xl text-left">
+                      <div className="bg-white border border-stone-200/60 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-4.5 rounded-2xl text-left">
                         <p className="text-[9px] font-mono uppercase tracking-wider text-stone-400 font-semibold leading-none">Âge Médian</p>
                         <p className="text-sm font-sans font-black text-blue-600 mt-1 leading-snug">{details.demographics.medianAge}</p>
                       </div>
 
-                      <div className="bg-stone-50 border border-stone-200 p-4.5 rounded-2xl text-left">
+                      <div className="bg-white border border-stone-200/60 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-4.5 rounded-2xl text-left">
                         <p className="text-[9px] font-mono uppercase tracking-wider text-stone-400 font-semibold leading-none">Espérance de Vie</p>
                         <p className="text-sm font-sans font-black text-emerald-600 mt-1 leading-snug">{details.demographics.lifeExpectancy}</p>
                       </div>
 
-                      <div className="bg-stone-50 border border-stone-200 p-4.5 rounded-2xl text-left col-span-2 md:col-span-2">
+                      <div className="bg-white border border-stone-200/60 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-4.5 rounded-2xl text-left col-span-2 md:col-span-2">
                         <p className="text-[9px] font-mono uppercase tracking-wider text-stone-400 font-semibold leading-none">Taux d'Urbanisation</p>
                         <p className="text-xs font-sans font-bold text-stone-700 mt-1.5">{details.demographics.urbanRatio}</p>
-                        <div className="w-full bg-stone-200 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div className="w-full bg-stone-100 h-1.5 rounded-full mt-2 overflow-hidden shadow-inner">
                           <div 
-                            className="bg-blue-500 h-full rounded-full" 
+                            className="bg-gradient-to-r from-blue-400 to-blue-600 h-full rounded-full" 
                             style={{ width: details.demographics.urbanRatio.match(/\d+/) ? `${details.demographics.urbanRatio.match(/\d+/)?.[0]}%` : "50%" }}
                           />
                         </div>
@@ -484,7 +482,7 @@ export default function CountryDescription({ countryId, countriesData }: Country
                     </div>
 
                     {/* Major Ethnic Groups */}
-                    <div className="bg-stone-50 border border-stone-200 p-5 rounded-2xl space-y-3">
+                    <div className="bg-white border border-stone-200/60 shadow-sm hover:shadow-md transition-all duration-300 p-5 rounded-2xl space-y-3">
                       <p className="text-[10px] font-mono uppercase tracking-wider text-stone-450 font-bold">Mosaïque ethnolinguistique & ethnies</p>
                       <p className="text-xs text-stone-500 leading-relaxed">
                         Le peuplement de cette région traduit une riche histoire migratoire et de cohabitation harmonieuse. Les grands groupes représentés sont :
@@ -518,17 +516,17 @@ export default function CountryDescription({ countryId, countriesData }: Country
 
                     {/* Economic Stat Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="bg-stone-50 border border-stone-200 p-4.5 rounded-2xl">
+                      <div className="bg-white border border-stone-200/60 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-4.5 rounded-2xl">
                         <span className="text-[9px] font-mono uppercase tracking-wider text-stone-400 block">PIB Nominal</span>
                         <span className="text-base font-sans font-black text-stone-900 block mt-1 leading-none">{details.economy.gdp}</span>
                       </div>
 
-                      <div className="bg-stone-50 border border-stone-200 p-4.5 rounded-2xl">
+                      <div className="bg-white border border-stone-200/60 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-4.5 rounded-2xl">
                         <span className="text-[9px] font-mono uppercase tracking-wider text-stone-400 block">Croissance Annuelle</span>
                         <span className="text-base font-sans font-black text-emerald-600 block mt-1 leading-none">{details.economy.gdpGrowth}</span>
                       </div>
 
-                      <div className="bg-stone-50 border border-stone-200 p-4.5 rounded-2xl">
+                      <div className="bg-white border border-stone-200/60 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-4.5 rounded-2xl">
                         <span className="text-[9px] font-mono uppercase tracking-wider text-stone-400 block">Unité Monétaire</span>
                         <span className="text-base font-sans font-black text-amber-600 block mt-1 leading-none">{details.economy.currency}</span>
                       </div>
@@ -536,7 +534,7 @@ export default function CountryDescription({ countryId, countriesData }: Country
 
                     {/* Main Sectors list */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-stone-50 border border-stone-200 p-5 rounded-2xl space-y-3">
+                      <div className="bg-white border border-stone-200/60 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-5 rounded-2xl space-y-3">
                         <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-stone-450 uppercase tracking-wider">
                           <Briefcase className="w-4 h-4 text-emerald-500" />
                           <span>Piliers industriels & services</span>
@@ -551,7 +549,7 @@ export default function CountryDescription({ countryId, countriesData }: Country
                         </ul>
                       </div>
 
-                      <div className="bg-stone-50 border border-stone-200 p-5 rounded-2xl flex flex-col justify-between">
+                      <div className="bg-white border border-stone-200/60 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 p-5 rounded-2xl flex flex-col justify-between">
                         <div className="space-y-2">
                           <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-stone-450 uppercase tracking-wider">
                             <Coins className="w-4 h-4 text-amber-500" />
@@ -587,7 +585,7 @@ export default function CountryDescription({ countryId, countriesData }: Country
                         Cette nation plurielle cultive une richesse phonétique et sémantique unique. Voici les principales langues utilisées par la population au quotidien :
                       </p>
 
-                      <div className="space-y-3.5 bg-stone-50/60 p-5 rounded-2xl border border-stone-200">
+                      <div className="space-y-3.5 bg-white shadow-sm p-5 rounded-2xl border border-stone-200/60 hover:shadow-md transition-all duration-300">
                         {details.languages.map((lang, lIdx) => {
                           const hasPct = lang.percentage.match(/\d+/);
                           const pctWidth = hasPct ? `${hasPct[0]}%` : "15%";
@@ -649,14 +647,15 @@ export default function CountryDescription({ countryId, countriesData }: Country
       {/* LANDMARK DETAIL MODAL */}
       <AnimatePresence>
         {selectedLandmark && (() => {
-          const details = getLandmarkDetails(selectedLandmark.id, selectedLandmark.name, selectedLandmark.description);
-          return createPortal(
+          const details = getLandmarkDetails(selectedLandmark);
+          return (
             <motion.div
+              key="landmark-modal"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedLandmark(null)}
-              className="fixed inset-0 bg-stone-950/85 backdrop-blur-md z-[60] flex items-center justify-center p-4 md:p-6"
+              className="fixed inset-0 bg-stone-950/85 backdrop-blur-md z-[9999] flex items-center justify-center p-4 md:p-6"
             >
               <motion.div
                 initial={{ scale: 0.95, y: 30, opacity: 0 }}
@@ -821,8 +820,7 @@ export default function CountryDescription({ countryId, countriesData }: Country
 
                 </div>
               </motion.div>
-            </motion.div>,
-            document.body
+            </motion.div>
           );
         })()}
       </AnimatePresence>

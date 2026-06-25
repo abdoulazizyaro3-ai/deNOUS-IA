@@ -159,37 +159,7 @@ export default function AssistantVocal({
         </div>
       </div>
 
-      <div className="space-y-3">
-        <div className="flex justify-between items-center text-xs md:text-sm">
-          <span className="font-black text-[#2B1810] uppercase tracking-wider">💡 Thèmes à écouter :</span>
-          <span className="text-[#C1561F] font-black hover:underline cursor-pointer flex items-center gap-0.5">Voir tout <ChevronRight size={15} /></span>
-        </div>
-        <div className="relative">
-          <button onClick={() => scrollCarousel("left")} className="absolute -left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md border border-slate-100 flex items-center justify-center text-[#354e38]/70 hover:text-[#354e38] z-20 cursor-pointer"><ChevronLeft size={16} /></button>
-          <div ref={carouselRef} className="flex gap-4 overflow-x-auto scrollbar-hide py-1.5 px-1 scroll-smooth snap-x" style={{ scrollbarWidth: "none" }}>
-            {[
-              { illustration: <CornIllustration />, title: "Comment cultiver le maïs cette saison ?", bgColor: "bg-amber-50/50 hover:bg-amber-50" },
-              { illustration: <MedicinalIllustration />, title: "Quelles plantes médicinales utilisent les Mossis ?", bgColor: "bg-emerald-50/50 hover:bg-emerald-50" },
-              { illustration: <MaliHistoryIllustration />, title: "Raconte-moi l'histoire du royaume du Mali.", bgColor: "bg-yellow-50/50 hover:bg-yellow-50" },
-              { illustration: <RainIllustration />, title: "Va-t-il pleuvoir demain dans ma région ?", bgColor: "bg-blue-50/50 hover:bg-blue-50" },
-              { illustration: <MarketIllustration />, title: "Comment créer une petite entreprise ?", bgColor: "bg-orange-50/50 hover:bg-orange-50" },
-              { illustration: <GraduationIllustration />, title: "Quels sont les débouchés après la licence ?", bgColor: "bg-indigo-50/50 hover:bg-indigo-50" },
-            ].map((card, idx) => (
-              <button key={idx} onClick={() => handleSuggestionClick(card.title)} className="min-w-[210px] w-[210px] bg-white border border-[#E5E7EB] hover:border-[#5FAF68] rounded-2xl flex flex-col items-stretch text-left shrink-0 scroll-snap-align-start hover:shadow-md transition-all group duration-200 cursor-pointer overflow-hidden p-0">
-                <div className={`h-[110px] flex items-center justify-center transition-colors border-b border-[#E5E7EB] ${card.bgColor}`}>{card.illustration}</div>
-                <div className="p-3.5 flex flex-col justify-between flex-1 space-y-3">
-                  <p className="text-[11px] font-bold text-[#354e38] leading-relaxed group-hover:text-[#5FAF68] transition-colors flex-1">{card.title}</p>
-                  <div className="flex justify-between items-center pt-2">
-                    <span className="text-[9px] text-slate-400 font-bold group-hover:text-[#5FAF68]/70 transition-colors uppercase tracking-wider">Savoir local</span>
-                    <div className="w-5 h-5 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-[#DFF2E1] transition-all"><ChevronRight size={11} className="text-[#354e38]/50 group-hover:text-[#5FAF68]" /></div>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-          <button onClick={() => scrollCarousel("right")} className="absolute -right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md border border-slate-100 flex items-center justify-center text-[#354e38]/70 hover:text-[#354e38] z-20 cursor-pointer"><ChevronRight size={16} /></button>
-        </div>
-      </div>
+
 
       <div className="flex justify-center pt-2">
         <div className="bg-[#DFF2E1]/30 border border-[#5FAF68]/15 px-4 py-1.5 rounded-full flex items-center gap-2 text-[11px] font-bold text-[#354e38]/80 shadow-sm">

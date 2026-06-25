@@ -1075,6 +1075,17 @@ class ExploreLandmark(models.Model):
     lat = models.FloatField(blank=True, null=True)
     lng = models.FloatField(blank=True, null=True)
 
+    # Nouveaux champs pour le détail dynamique (modal)
+    image_1 = models.URLField(max_length=500, blank=True, null=True, help_text="Image suppl. 1")
+    image_2 = models.URLField(max_length=500, blank=True, null=True, help_text="Image suppl. 2")
+    image_3 = models.URLField(max_length=500, blank=True, null=True, help_text="Image suppl. 3")
+    image_4 = models.URLField(max_length=500, blank=True, null=True, help_text="Image suppl. 4")
+    image_5 = models.URLField(max_length=500, blank=True, null=True, help_text="Image suppl. 5")
+    
+    detailed_description = models.TextField(blank=True, null=True, help_text="Histoire de ce joyau national")
+    why_visit = models.TextField(blank=True, null=True, help_text="Pourquoi venir visiter ?")
+    practical_tips = models.TextField(blank=True, null=True, help_text="Conseils pratiques séparés par des sauts de ligne")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -1098,6 +1109,14 @@ class ExploreLandmark(models.Model):
             "rating": self.rating,
             "tag": self.tag,
             "dateRange": self.date_range,
+            "detailedDescription": self.detailed_description,
+            "whyVisit": self.why_visit,
+            "practicalTips": self.practical_tips,
+            "image1": self.image_1,
+            "image2": self.image_2,
+            "image3": self.image_3,
+            "image4": self.image_4,
+            "image5": self.image_5,
             "lat": self.lat,
             "lng": self.lng
         }

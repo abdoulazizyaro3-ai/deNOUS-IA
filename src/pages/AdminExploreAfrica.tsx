@@ -253,10 +253,27 @@ export default function AdminExploreAfrica({ searchTerm }: { searchTerm: string 
                     </button>
                   </div>
                   {(form.landmarks || []).map((lm: any, index: number) => (
-                    <div key={index} className="grid grid-cols-3 gap-2 p-2 border rounded-lg bg-white relative">
-                      <input placeholder="Nom du site" value={lm.name} onChange={e => { const newLms = [...form.landmarks]; newLms[index].name = e.target.value; setForm({...form, landmarks: newLms}); }} className="col-span-1 p-2 border rounded text-xs" />
-                      <input placeholder="Image URL (ex: /img.jpg)" value={lm.image || lm.image_url || ""} onChange={e => { const newLms = [...form.landmarks]; newLms[index].image = e.target.value; setForm({...form, landmarks: newLms}); }} className="col-span-1 p-2 border rounded text-xs" />
-                      <input placeholder="Description courte" value={lm.description} onChange={e => { const newLms = [...form.landmarks]; newLms[index].description = e.target.value; setForm({...form, landmarks: newLms}); }} className="col-span-1 p-2 border rounded text-xs" />
+                    <div key={index} className="grid gap-2 p-3 border rounded-lg bg-white relative shadow-sm">
+                      <div className="grid grid-cols-3 gap-2">
+                        <input placeholder="Nom du site" value={lm.name} onChange={e => { const newLms = [...form.landmarks]; newLms[index].name = e.target.value; setForm({...form, landmarks: newLms}); }} className="col-span-1 p-2 border rounded text-xs" />
+                        <input placeholder="Image principale URL (ex: /img.jpg)" value={lm.image || lm.image_url || ""} onChange={e => { const newLms = [...form.landmarks]; newLms[index].image = e.target.value; setForm({...form, landmarks: newLms}); }} className="col-span-1 p-2 border rounded text-xs" />
+                        <input placeholder="Description courte" value={lm.description} onChange={e => { const newLms = [...form.landmarks]; newLms[index].description = e.target.value; setForm({...form, landmarks: newLms}); }} className="col-span-1 p-2 border rounded text-xs" />
+                      </div>
+                      
+                      <div className="grid grid-cols-5 gap-2 mt-2">
+                        <input placeholder="Image 1 (URL)" value={lm.image1 || ""} onChange={e => { const newLms = [...form.landmarks]; newLms[index].image1 = e.target.value; setForm({...form, landmarks: newLms}); }} className="p-2 border rounded text-xs bg-slate-50" />
+                        <input placeholder="Image 2 (URL)" value={lm.image2 || ""} onChange={e => { const newLms = [...form.landmarks]; newLms[index].image2 = e.target.value; setForm({...form, landmarks: newLms}); }} className="p-2 border rounded text-xs bg-slate-50" />
+                        <input placeholder="Image 3 (URL)" value={lm.image3 || ""} onChange={e => { const newLms = [...form.landmarks]; newLms[index].image3 = e.target.value; setForm({...form, landmarks: newLms}); }} className="p-2 border rounded text-xs bg-slate-50" />
+                        <input placeholder="Image 4 (URL)" value={lm.image4 || ""} onChange={e => { const newLms = [...form.landmarks]; newLms[index].image4 = e.target.value; setForm({...form, landmarks: newLms}); }} className="p-2 border rounded text-xs bg-slate-50" />
+                        <input placeholder="Image 5 (URL)" value={lm.image5 || ""} onChange={e => { const newLms = [...form.landmarks]; newLms[index].image5 = e.target.value; setForm({...form, landmarks: newLms}); }} className="p-2 border rounded text-xs bg-slate-50" />
+                      </div>
+                      
+                      <div className="grid grid-cols-1 gap-2 mt-2">
+                        <textarea placeholder="Description Détaillée (Modal)" rows={2} value={lm.detailedDescription || ""} onChange={e => { const newLms = [...form.landmarks]; newLms[index].detailedDescription = e.target.value; setForm({...form, landmarks: newLms}); }} className="p-2 border rounded text-xs bg-slate-50 w-full" />
+                        <input placeholder="Pourquoi visiter ?" value={lm.whyVisit || ""} onChange={e => { const newLms = [...form.landmarks]; newLms[index].whyVisit = e.target.value; setForm({...form, landmarks: newLms}); }} className="p-2 border rounded text-xs bg-slate-50 w-full" />
+                        <textarea placeholder="Conseils pratiques (séparés par un saut de ligne)" rows={2} value={lm.practicalTips || ""} onChange={e => { const newLms = [...form.landmarks]; newLms[index].practicalTips = e.target.value; setForm({...form, landmarks: newLms}); }} className="p-2 border rounded text-xs bg-slate-50 w-full" />
+                      </div>
+
                       <button type="button" onClick={() => { const newLms = form.landmarks.filter((_:any, i:number) => i !== index); setForm({...form, landmarks: newLms}); }} className="absolute -right-2 -top-2 bg-red-100 text-red-600 rounded-full p-1"><Trash2 size={12} /></button>
                     </div>
                   ))}

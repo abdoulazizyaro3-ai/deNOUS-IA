@@ -228,10 +228,10 @@ export default function AfricaMap({ onSelectCountry, selectedCountryId, countrie
     if (!leafletInstance.current) {
       const initialCenter = selectedCountryId 
         ? [countryCoordinates[selectedCountryId].lat, countryCoordinates[selectedCountryId].lng]
-        : [8.4, 15.0];
+        : [-2.0, 18.0];
       const initialZoom = selectedCountryId 
         ? countryCoordinates[selectedCountryId].zoom
-        : 3.2;
+        : 3;
 
       const map = L.map(mapContainerRef.current, {
         center: initialCenter, 

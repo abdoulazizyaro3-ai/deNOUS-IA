@@ -1464,7 +1464,15 @@ def create_explore_country(request):
                         country=country,
                         name=lm.get("name", ""),
                         description=lm.get("description", ""),
-                        image_url=lm.get("image", "")
+                        image=lm.get("image", ""),
+                        image_1=lm.get("image1", ""),
+                        image_2=lm.get("image2", ""),
+                        image_3=lm.get("image3", ""),
+                        image_4=lm.get("image4", ""),
+                        image_5=lm.get("image5", ""),
+                        detailed_description=lm.get("detailedDescription", ""),
+                        why_visit=lm.get("whyVisit", ""),
+                        practical_tips=lm.get("practicalTips", "")
                     )
 
             return JsonResponse({"success": True})
@@ -1539,7 +1547,15 @@ def update_explore_country(request, country_id):
                         country=country,
                         name=lm.get("name", ""),
                         description=lm.get("description", ""),
-                        image_url=lm.get("image", "")
+                        image=lm.get("image", ""),
+                        image_1=lm.get("image1", ""),
+                        image_2=lm.get("image2", ""),
+                        image_3=lm.get("image3", ""),
+                        image_4=lm.get("image4", ""),
+                        image_5=lm.get("image5", ""),
+                        detailed_description=lm.get("detailedDescription", ""),
+                        why_visit=lm.get("whyVisit", ""),
+                        practical_tips=lm.get("practicalTips", "")
                     )
 
             return JsonResponse({"success": True})
