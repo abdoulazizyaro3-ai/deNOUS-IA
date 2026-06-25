@@ -93,7 +93,7 @@ export default function Messages({
               <h2 className="text-white font-black text-[15px] tracking-tight">deNOUS AI</h2>
               <p className="text-[#E8A33D]/80 text-[10px] font-semibold flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-[#3D6B35] rounded-full animate-pulse" />
-                Gardien de la Sagesse Africaine
+                La Bibliothèque Vivante du Continent
               </p>
             </div>
           </div>

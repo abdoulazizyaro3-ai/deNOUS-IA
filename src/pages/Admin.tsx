@@ -668,16 +668,16 @@ export default function Admin() {
                 Aucun savoir trouvé.
               </div>
             ) : (
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left text-xs border-collapse table-fixed min-w-[900px]">
                 <thead>
                   <tr className="bg-[#FAF6F0] text-[#2B1810]/70 border-b border-[#EADBC8]">
-                    <th className="p-4 font-black">ID</th>
-                    <th className="p-4 font-black">Titre</th>
-                    <th className="p-4 font-black">Thème / Catégorie</th>
-                    <th className="p-4 font-black">Pays / Région</th>
-                    <th className="p-4 font-black">Langue</th>
-                    <th className="p-4 font-black text-center">Score de fiabilité</th>
-                    <th className="p-4 font-black text-right">Actions</th>
+                    <th className="p-4 font-black w-24">ID</th>
+                    <th className="p-4 font-black w-1/4">Titre</th>
+                    <th className="p-4 font-black w-40">Thème / Catégorie</th>
+                    <th className="p-4 font-black w-32">Pays / Région</th>
+                    <th className="p-4 font-black w-32">Langue</th>
+                    <th className="p-4 font-black text-center w-32">Score de fiabilité</th>
+                    <th className="p-4 font-black text-right w-24">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EADBC8]/50">
@@ -767,15 +767,15 @@ export default function Admin() {
                 Aucun dictionnaire trouvé.
               </div>
             ) : (
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left text-xs border-collapse table-fixed min-w-[800px]">
                 <thead>
                   <tr className="bg-[#FAF6F0] text-[#2B1810]/70 border-b border-[#EADBC8]">
-                    <th className="p-4 font-black">ID</th>
-                    <th className="p-4 font-black">Nom du Dictionnaire</th>
-                    <th className="p-4 font-black">Langue</th>
-                    <th className="p-4 font-black">Fichier PDF</th>
-                    <th className="p-4 font-black">Mots Clés / Contenu Extrait</th>
-                    <th className="p-4 font-black text-right">Actions</th>
+                    <th className="p-4 font-black w-24">ID</th>
+                    <th className="p-4 font-black w-1/4">Nom du Dictionnaire</th>
+                    <th className="p-4 font-black w-32">Langue</th>
+                    <th className="p-4 font-black w-48">Fichier PDF</th>
+                    <th className="p-4 font-black w-1/3">Mots Clés / Contenu Extrait</th>
+                    <th className="p-4 font-black text-right w-24">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EADBC8]/50">
@@ -867,15 +867,15 @@ export default function Admin() {
                 Aucune archive trouvée.
               </div>
             ) : (
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left text-xs border-collapse table-fixed min-w-[800px]">
                 <thead>
                   <tr className="bg-[#FAF6F0] text-[#2B1810]/70 border-b border-[#EADBC8]">
-                    <th className="p-4 font-black">ID</th>
-                    <th className="p-4 font-black">Type de document</th>
-                    <th className="p-4 font-black">Provenance</th>
-                    <th className="p-4 font-black">Description / Notes</th>
-                    <th className="p-4 font-black">Fichier PDF</th>
-                    <th className="p-4 font-black text-right">Actions</th>
+                    <th className="p-4 font-black w-24">ID</th>
+                    <th className="p-4 font-black w-32">Type de document</th>
+                    <th className="p-4 font-black w-40">Provenance</th>
+                    <th className="p-4 font-black w-1/4">Description / Notes</th>
+                    <th className="p-4 font-black w-48">Fichier PDF</th>
+                    <th className="p-4 font-black text-right w-24">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EADBC8]/50">

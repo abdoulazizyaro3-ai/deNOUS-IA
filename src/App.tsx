@@ -27,6 +27,7 @@ import { useRealtimeVocal } from "./hooks/useRealtimeVocal";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
   const [activeTab, setActiveTab] = useState<string>("Assistant vocal");
@@ -83,6 +84,7 @@ export default function App() {
         }
       }
     } catch (e) { console.error("Error checking auth", e); }
+    finally { setIsCheckingAuth(false); }
   };
 
   useEffect(() => { 
@@ -200,6 +202,14 @@ export default function App() {
 
   const isAdmin = currentUser?.profile?.role === "admin" || currentUser?.profile?.role === "moderator" || currentUser?.is_superuser;
 
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-[#FAF6F0] flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
     return <Auth onLoginSuccess={(u) => { setIsAuthenticated(true); setCurrentUser(u); }} />;
   }
@@ -228,7 +238,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="text-[19px] font-black font-display tracking-tight text-[#2B1810] leading-none">deNOUS AI</h1>
-              <p className="text-[10px] text-[#C1561F] tracking-tight font-black mt-1 leading-snug">Sagesse et Oralité Africaine 🌍</p>
+              <p className="text-[10px] text-[#C1561F] tracking-tight font-black mt-1 leading-snug">La Bibliothèque Vivante du Continent 🌍</p>
             </div>
           </div>
 
@@ -272,9 +282,11 @@ export default function App() {
             const IconComp = btn.icon;
             const isActive = activeTab === btn.label;
             return (
-              <div key={btn.label} className="flex items-center">
-                <button onClick={() => { stopSpeaking(); setActiveTab(btn.label); }} className={`flex-1 py-2.5 px-3 rounded-xl flex items-center gap-3 text-xs md:text-[13px] font-black tracking-normal transition-all duration-150 text-left ${isActive ? "bg-[#F5ECE1] text-[#C1561F] border-l-4 border-[#C1561F]" : "text-[#2B1810]/70 hover:bg-[#F5ECE1]/40"}`}>
-                  <IconComp size={17} className={isActive ? "text-[#C1561F]" : "text-[#2B1810]/50 shrink-0"} />
+              <div key={btn.label} className="flex items-center group">
+                <button onClick={() => { stopSpeaking(); setActiveTab(btn.label); }} className={`flex-1 py-3 px-3 rounded-xl flex items-center gap-3 text-xs md:text-[13px] font-black tracking-normal transition-all duration-300 text-left relative overflow-hidden ${isActive ? "bg-gradient-to-r from-[#C1561F]/10 to-transparent text-[#C1561F] shadow-[inset_2px_0_0_#C1561F]" : "text-[#2B1810]/70 hover:bg-[#F5ECE1]/60 hover:text-[#C1561F]"}`}>
+                  <div className={`p-1.5 rounded-lg transition-colors duration-300 ${isActive ? 'bg-[#C1561F]/10' : 'bg-transparent group-hover:bg-[#C1561F]/10'}`}>
+                    <IconComp size={16} className={isActive ? "text-[#C1561F]" : "text-[#2B1810]/50 shrink-0 group-hover:text-[#C1561F]"} />
+                  </div>
                   <span className="truncate">{btn.label}</span>
                 </button>
               </div>
@@ -349,6 +361,15 @@ export default function App() {
           }
         }} />}
         {activeTab === "Administration" && <Admin />}
+        
+        {/* Footer Signature */}
+        <div className="mt-auto py-6 flex flex-col items-center justify-center w-full z-10 border-t border-[#EADBC8]/40 bg-white/30 backdrop-blur-sm mt-8">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white rounded-full shadow-sm border border-[#EADBC8]/50 mb-2">
+            <span className="w-2 h-2 rounded-full bg-[#C1561F] animate-pulse"></span>
+            <span className="text-xs font-black tracking-widest uppercase text-[#2B1810]">Team Stat © 2026</span>
+          </div>
+          <p className="text-[10px] text-[#2B1810]/70 font-bold tracking-wide">Tous droits réservés</p>
+        </div>
       </main>
     </div>
   );
