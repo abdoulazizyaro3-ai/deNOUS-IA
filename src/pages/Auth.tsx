@@ -63,7 +63,7 @@ export default function Auth({ onLoginSuccess }: AuthProps) {
           </svg>
         </div>
         <h1 className="text-3xl font-black font-display tracking-tight text-[#2B1810]">deNOUS AI</h1>
-        <p className="text-sm font-bold text-[#C1561F] mt-1 tracking-wider uppercase">Sagesse & Oralité Africaine</p>
+        <p className="text-sm font-bold text-[#C1561F] mt-1 tracking-wider uppercase">La Bibliothèque Vivante de l'Afrique</p>
       </div>
 
       {/* Card */}

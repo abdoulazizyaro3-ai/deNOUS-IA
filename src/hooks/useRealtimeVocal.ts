@@ -6,7 +6,7 @@ interface UseRealtimeVocalReturn {
   voiceState: VoiceState;
   transcript: string;
   isConnecting: boolean;
-  startSession: () => void;
+  startSession: (language?: string) => void;
   stopSession: () => void;
   endTurn: () => void;
   interrupt: () => void;

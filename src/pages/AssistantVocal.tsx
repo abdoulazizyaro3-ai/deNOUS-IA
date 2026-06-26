@@ -1,63 +1,22 @@
 import React from "react";
-import {
-  Mic,
-  ChevronRight,
-  ChevronLeft,
-  Volume2,
-  X,
-  ShieldCheck,
-} from "lucide-react";
-import {
-  CornIllustration,
-  MedicinalIllustration,
-  MaliHistoryIllustration,
-  RainIllustration,
-  MarketIllustration,
-  GraduationIllustration,
-} from "../components/Illustrations";
+import { Mic, ShieldCheck } from "lucide-react";
 
 interface AssistantVocalProps {
   currentUser?: any;
   voiceState: "idle" | "listening" | "thinking" | "speaking" | "interrupted" | "processing" | "playing";
   recordingSeconds: number;
-  showVocalResponse: boolean;
-  aiResponse: string;
-  vocalTranslation: string;
-  dynamicReliability: number;
-  selectedLanguage: string;
   toggleListening: () => void;
   stopSession: () => void;
-  handleSuggestionClick: (text: string) => void;
-  speakText: (text: string, audioBase64?: string) => void;
-  stopSpeaking: () => void;
-  setShowVocalResponse: (v: boolean) => void;
-  setVoiceState: (v: "idle" | "listening" | "thinking" | "speaking" | "interrupted" | "processing" | "playing") => void;
-  carouselRef: React.RefObject<HTMLDivElement>;
-  scrollCarousel: (dir: number) => void;
   transcript: string;
-  aiAudioOutput: string | null;
 }
 
 export default function AssistantVocal({
   currentUser,
   voiceState,
   recordingSeconds,
-  showVocalResponse,
-  aiResponse,
-  vocalTranslation,
-  dynamicReliability,
-  selectedLanguage,
   toggleListening,
   stopSession,
-  handleSuggestionClick,
-  speakText,
-  stopSpeaking,
-  setShowVocalResponse,
-  setVoiceState,
-  carouselRef,
-  scrollCarousel,
   transcript,
-  aiAudioOutput,
 }: AssistantVocalProps) {
   return (
     <div className="flex-1 flex flex-col justify-start px-4 md:px-12 pb-6 pt-2 gap-4 max-w-[1100px] w-full mx-auto relative z-10 bg-[#FAF6F0]/20 bg-bogolan/10 rounded-3xl mt-1 border border-[#EADBC8]/50">
@@ -146,16 +105,6 @@ export default function AssistantVocal({
             </div>
           )}
 
-          {voiceState === "idle" && aiAudioOutput && (
-            <div className="flex justify-center pt-2">
-              <button 
-                onClick={() => speakText(aiResponse, aiAudioOutput)} 
-                className="px-4 py-2 bg-[#E8A33D] hover:bg-[#d8922c] rounded-full text-xs font-black text-white flex items-center gap-2 transition-all shadow-md hover:shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
-              >
-                <Volume2 size={14} /><span>Réécouter la réponse</span>
-              </button>
-            </div>
-          )}
         </div>
       </div>
 

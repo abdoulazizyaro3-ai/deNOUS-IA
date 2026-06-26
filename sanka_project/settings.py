@@ -72,15 +72,46 @@ TEMPLATES = [
 WSGI_APPLICATION = 'sanka_project.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+# Database — Supabase (PostgreSQL) avec fallback SQLite automatique
+def _supabase_reachable(host: str, port: int = 5432, timeout: float = 2.0) -> bool:
+    """Vérifie si le serveur Supabase est joignable avant de configurer PostgreSQL."""
+    import socket
+    try:
+        socket.setdefaulttimeout(timeout)
+        socket.getaddrinfo(host, port)
+        return True
+    except (socket.gaierror, socket.timeout, OSError):
+        return False
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+_db_host = os.environ.get('DB_HOST', '')
+_use_sqlite = os.environ.get('USE_SQLITE', 'false').lower() == 'true'
+
+if not _use_sqlite and _db_host and _supabase_reachable(_db_host):
+    print(f"[DB] Connexion Supabase : {_db_host}")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', 'postgres'),
+            'USER': os.environ.get('DB_USER', 'postgres'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': _db_host,
+            'PORT': os.environ.get('DB_PORT', '5432'),
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+        }
     }
-}
+else:
+    if not _use_sqlite:
+        print(f"[DB] Supabase inaccessible ({_db_host}) — Fallback SQLite local.")
+    else:
+        print("[DB] SQLite forcé via USE_SQLITE=true.")
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation

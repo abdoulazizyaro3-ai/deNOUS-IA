@@ -266,7 +266,7 @@ class VocalAgentConsumer(AsyncWebsocketConsumer):
                     elif event_type == "error":
                         error_msg = response.get('error', {}).get('message', '')
                         print(f"[VocalConsumer] Erreur de l'API OpenAI: {error_msg}")
-                        if "buffer too small" in error_msg or "Cancellation failed" in error_msg or "no active response" in error_msg:
+                        if "buffer too small" in error_msg or "Cancellation failed" in error_msg or "no active response" in error_msg or "active response in progress" in error_msg:
                             # Ignorer silencieusement
                             if "buffer too small" in error_msg:
                                 await self.send(json.dumps({"type": "turn_complete"}))

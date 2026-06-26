@@ -1,5 +1,102 @@
 import React, { useRef, useEffect, useState } from "react";
-import { Send, Paperclip, Mic, Sparkles, Volume2, X, Bot } from "lucide-react";
+import { Send, Paperclip, Sparkles, X } from "lucide-react";
+
+// ── Renderer Markdown léger pour les bulles IA ────────────────────────────────
+function renderInline(text: string): React.ReactNode[] {
+  const parts = text.split(/(\*\*.*?\*\*|\*.*?\*|`[^`]+`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**"))
+      return <strong key={i} className="font-bold text-[#2B1810]">{part.slice(2, -2)}</strong>;
+    if (part.startsWith("*") && part.endsWith("*") && part.length > 2)
+      return <em key={i} className="italic">{part.slice(1, -1)}</em>;
+    if (part.startsWith("`") && part.endsWith("`"))
+      return <code key={i} className="bg-[#F0E8DC] text-[#C1561F] rounded px-1 py-0.5 text-[12px] font-mono">{part.slice(1, -1)}</code>;
+    return <span key={i}>{part}</span>;
+  });
+}
+
+function MarkdownMessage({ text }: { text: string }) {
+  const lines = text.split("\n");
+  const nodes: React.ReactNode[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Titres
+    if (/^### (.+)/.test(line)) {
+      nodes.push(
+        <h3 key={i} className="text-[13px] font-black text-[#C1561F] mt-3 mb-1 uppercase tracking-wide">
+          {renderInline(line.replace(/^### /, ""))}
+        </h3>
+      );
+    } else if (/^## (.+)/.test(line)) {
+      nodes.push(
+        <h2 key={i} className="text-[14px] font-black text-[#2B1810] mt-4 mb-1.5 border-b border-[#EADBC8] pb-1">
+          {renderInline(line.replace(/^## /, ""))}
+        </h2>
+      );
+    } else if (/^# (.+)/.test(line)) {
+      nodes.push(
+        <h1 key={i} className="text-[15px] font-black text-[#2B1810] mt-4 mb-2 border-b-2 border-[#C1561F] pb-1">
+          {renderInline(line.replace(/^# /, ""))}
+        </h1>
+      );
+
+    // Séparateur
+    } else if (/^---+$/.test(line.trim())) {
+      nodes.push(<hr key={i} className="border-none border-t border-[#EADBC8] my-3" />);
+
+    // Listes à puces
+    } else if (/^[-*•] (.+)/.test(line)) {
+      const items: React.ReactNode[] = [];
+      while (i < lines.length && /^[-*•] (.+)/.test(lines[i])) {
+        items.push(
+          <li key={i} className="flex gap-2 items-start">
+            <span className="text-[#C1561F] mt-[3px] shrink-0">▸</span>
+            <span>{renderInline(lines[i].replace(/^[-*•] /, ""))}</span>
+          </li>
+        );
+        i++;
+      }
+      nodes.push(<ul key={`ul-${i}`} className="space-y-1 my-1.5 text-[13px]">{items}</ul>);
+      continue;
+
+    // Listes numérotées
+    } else if (/^\d+\. (.+)/.test(line)) {
+      const items: React.ReactNode[] = [];
+      let num = 1;
+      while (i < lines.length && /^\d+\. (.+)/.test(lines[i])) {
+        items.push(
+          <li key={i} className="flex gap-2 items-start">
+            <span className="text-[#C1561F] font-bold shrink-0 min-w-[16px]">{num}.</span>
+            <span>{renderInline(lines[i].replace(/^\d+\. /, ""))}</span>
+          </li>
+        );
+        i++;
+        num++;
+      }
+      nodes.push(<ol key={`ol-${i}`} className="space-y-1 my-1.5 text-[13px]">{items}</ol>);
+      continue;
+
+    // Ligne vide
+    } else if (line.trim() === "") {
+      nodes.push(<div key={i} className="h-2" />);
+
+    // Paragraphe normal
+    } else {
+      nodes.push(
+        <p key={i} className="text-[13px] leading-relaxed text-[#2B1810]">
+          {renderInline(line)}
+        </p>
+      );
+    }
+
+    i++;
+  }
+
+  return <div className="space-y-0.5">{nodes}</div>;
+}
 
 interface Message {
   sender: "user" | "ai";
@@ -14,7 +111,6 @@ interface MessagesProps {
   setKeyboardText: (v: string) => void;
   handleQuerySubmit: (text: string) => void;
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
-  speakText: (text: string) => void;
   fileInputRef: React.RefObject<HTMLInputElement>;
   attachedFile: File | null;
   setAttachedFile: (f: File | null) => void;
@@ -27,7 +123,6 @@ export default function Messages({
   setKeyboardText,
   handleQuerySubmit,
   setMessages,
-  speakText,
   fileInputRef,
   attachedFile,
   setAttachedFile,
@@ -153,28 +248,17 @@ export default function Messages({
                     </svg>
                   </div>
                 )}
-                <div className="whitespace-pre-line relative z-10">
-                  {m.text.split(/(\*\*.*?\*\*)/g).map((part, i) => {
-                    if (part.startsWith('**') && part.endsWith('**')) {
-                      return <strong key={i} className="font-bold">{part.slice(2, -2)}</strong>;
-                    }
-                    return <span key={i}>{part}</span>;
-                  })}
+                <div className="relative z-10">
+                  {m.sender === "ai"
+                    ? <MarkdownMessage text={m.text} />
+                    : <p className="text-sm leading-relaxed">{m.text}</p>
+                  }
                 </div>
               </div>
 
               {/* Metadata row */}
               <div className={`flex items-center gap-2 px-1 ${m.sender === "user" ? "justify-end" : "justify-start"}`}>
                 <span className="text-[10px] text-[#2B1810]/35 font-medium">{m.timestamp}</span>
-                {m.sender === "ai" && (
-                  <button
-                    onClick={() => speakText(m.text)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded-lg hover:bg-[#C1561F]/10 text-[#C1561F]/60 hover:text-[#C1561F]"
-                    title="Écouter ce message"
-                  >
-                    <Volume2 size={11} />
-                  </button>
-                )}
               </div>
             </div>
 

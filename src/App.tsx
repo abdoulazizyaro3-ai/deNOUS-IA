@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Mic, MessageSquare, Globe,
-  GraduationCap, Settings, User, Volume2, VolumeX, Shield,
+  Settings, User, Volume2, VolumeX, Shield,
 } from "lucide-react";
-import { KnowledgeNode } from "./types";
-import { AgentSquadCard } from "./components/AgentSquadCard";
 
 // Pages
 import AssistantVocal from "./pages/AssistantVocal";
@@ -32,46 +30,20 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState<string>("Assistant vocal");
   const [selectedLanguage, setSelectedLanguage] = useState<string>("Français");
-  const [hasInteracted, setHasInteracted] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [keyboardText, setKeyboardText] = useState("");
   const [showVocalResponse, setShowVocalResponse] = useState(false);
-  const [aiResponse, setAiResponse] = useState("");
-  const [dynamicReliability, setDynamicReliability] = useState<number>(96);
-  const [vocalTranslation, setVocalTranslation] = useState<string>("");
-  
-  const realtime = useRealtimeVocal();
-  const voiceState = realtime.voiceState;
-  const transcript = realtime.transcript;
-  const aiAudioOutput = "";
-  
-  const [coordinatorLogs, setCoordinatorLogs] = useState<any[]>([
-    { agentName: "Agent Principal Coordinateur", role: "Orchestration, Routage", action: "Veille passive de la souveraineté intellectuelle", timestamp: "Actif", status: "success" }
-  ]);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const [nodes, setNodes] = useState<KnowledgeNode[]>([]);
+  const realtime = useRealtimeVocal();
+
   const [searchQuery, setSearchQuery] = useState("");
-  const carouselRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [messages, setMessages] = useState<Message[]>([
     { sender: "ai", text: "Bonjour ! Bienvenue sur deNOUS AI. Que souhaitez-vous savoir aujourd'hui ?", timestamp: "11:40" },
   ]);
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
-  const [newSavoirText, setNewSavoirText] = useState("");
-  const [newSavoirTitle, setNewSavoirTitle] = useState("");
-  const [newSavoirTheme, setNewSavoirTheme] = useState("culture");
-  const [selectedCountry, setSelectedCountry] = useState("Mali");
-
-  const fetchNodes = async () => {
-    try {
-      const res = await fetch("/api/nodes");
-      const data = await res.json();
-      if (data && data.nodes) setNodes(data.nodes);
-    } catch (e) { console.error("Error fetching knowledge bank", e); }
-  };
 
   const checkAuth = async () => {
     try {
@@ -87,31 +59,22 @@ export default function App() {
     finally { setIsCheckingAuth(false); }
   };
 
-  useEffect(() => { 
+  useEffect(() => {
     checkAuth();
-    fetchNodes(); 
   }, []);
 
   useEffect(() => {
     let interval: any;
-    if (voiceState === "listening") {
+    if (realtime.voiceState === "listening") {
       interval = setInterval(() => setRecordingSeconds((prev) => prev + 1), 1000);
     } else { setRecordingSeconds(0); }
     return () => clearInterval(interval);
-  }, [voiceState]);
-
-  const speakText = (text: string, audioBase64?: string) => {
-    // handled by Realtime hook now
-  };
+  }, [realtime.voiceState]);
 
   const stopSpeaking = () => {
     if (realtime.voiceState === 'speaking') {
       realtime.interrupt();
     }
-  };
-
-  const handleVocalQuerySubmit = async (queryText: string) => {
-    // handled by Realtime hook
   };
 
   const handleChatQuerySubmit = async (queryText: string) => {
@@ -130,9 +93,7 @@ export default function App() {
       });
       const data = await response.json();
       if (data && data.answerText) {
-        setHasInteracted(true);
         if (data.detectedLanguage) setSelectedLanguage(data.detectedLanguage);
-        if (data.coordinatorLogs) setCoordinatorLogs(data.coordinatorLogs);
         setMessages((prev) => [
           ...prev,
           { sender: "ai", text: data.answerText, timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) },
@@ -158,34 +119,12 @@ export default function App() {
   };
 
   const handleSuggestionClick = (text: string) => {
-    if (activeTab === "Messages") {
-      setMessages((prev) => [
-        ...prev,
-        { sender: "user", text, timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) },
-      ]);
-      handleChatQuerySubmit(text);
-    } else {
-      setActiveTab("Assistant vocal");
-      handleVocalQuerySubmit(text);
-    }
-  };
-
-  const scrollCarousel = (direction: "left" | "right") => {
-    carouselRef.current?.scrollBy({ left: direction === "left" ? -280 : 280, behavior: "smooth" });
-  };
-
-  const handleIngestSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSavoirText.trim()) return;
-    try {
-      const res = await fetch("/api/nodes/collect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: newSavoirTitle || "Récit traditionnel de " + selectedCountry, category: "traditionnelle", theme: newSavoirTheme, rawContent: newSavoirText, language: selectedLanguage, country: selectedCountry, region: "Afrique Centrale / Ouest", ethnolinguisticGroup: "Général", period: "Contemporain", source: "Aminata D.", consent: true }),
-      });
-      const data = await res.json();
-      if (data.success) { alert("Enregistrement réussi !"); setNewSavoirTitle(""); setNewSavoirText(""); fetchNodes(); }
-    } catch (_) { alert("Erreur lors de la capture de la sagesse."); }
+    setMessages((prev) => [
+      ...prev,
+      { sender: "user", text, timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) },
+    ]);
+    setActiveTab("Messages");
+    handleChatQuerySubmit(text);
   };
 
   const navItems = [
@@ -306,7 +245,6 @@ export default function App() {
                 onChange={(e) => {
                   stopSpeaking();
                   setSelectedLanguage(e.target.value);
-                  setHasInteracted(true);
                 }}
                 className="bg-transparent border-none text-xs font-black text-[#C1561F] focus:outline-none cursor-pointer pr-1 font-sans"
               >
@@ -328,25 +266,12 @@ export default function App() {
               currentUser={currentUser}
               voiceState={realtime.voiceState}
               recordingSeconds={recordingSeconds}
-              showVocalResponse={showVocalResponse}
-              aiResponse={aiResponse}
-              vocalTranslation={vocalTranslation}
-              dynamicReliability={dynamicReliability}
-              selectedLanguage={selectedLanguage}
               toggleListening={toggleListening}
               stopSession={realtime.stopSession}
-              handleSuggestionClick={handleSuggestionClick}
-              speakText={speakText}
-              stopSpeaking={stopSpeaking}
-              setShowVocalResponse={setShowVocalResponse}
-              setVoiceState={() => {}}
-              carouselRef={carouselRef}
-              scrollCarousel={scrollCarousel}
               transcript={realtime.transcript}
-              aiAudioOutput={aiAudioOutput}
             />
         )}
-        {activeTab === "Messages" && <Messages currentUser={currentUser} messages={messages} keyboardText={keyboardText} setKeyboardText={setKeyboardText} handleQuerySubmit={handleChatQuerySubmit} setMessages={setMessages} speakText={speakText} fileInputRef={fileInputRef} attachedFile={attachedFile} setAttachedFile={setAttachedFile} />}
+        {activeTab === "Messages" && <Messages currentUser={currentUser} messages={messages} keyboardText={keyboardText} setKeyboardText={setKeyboardText} handleQuerySubmit={handleChatQuerySubmit} setMessages={setMessages} fileInputRef={fileInputRef} attachedFile={attachedFile} setAttachedFile={setAttachedFile} />}
         {activeTab === "Explorer l'Afrique" && <ExplorerAfrique searchQuery={searchQuery} setSearchQuery={setSearchQuery} handleSuggestionClick={handleSuggestionClick} />}
         {activeTab === "Paramètres" && <Parametres />}
         {activeTab === "Mon compte" && <MonCompte currentUser={currentUser} onLogout={async () => {
