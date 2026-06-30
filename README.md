@@ -52,4 +52,5 @@ Cela démarrera :
 Créez un fichier `.env` à la racine contenant :
 ```env
 GEMINI_API_KEY=votre_cle_api_gemini
+OPENAI_API_KEY=votre_cle_api_openai
 ```
